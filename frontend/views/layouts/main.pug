@@ -1,0 +1,28 @@
+doctype html
+html(lang='vi')
+  head
+    meta(charset='UTF-8')
+    meta(name='viewport' content='width=device-width, initial-scale=1.0')
+    title= title || 'Hệ Thống Đặt Sân'
+    link(rel='stylesheet' href='/css/style.css')
+  body
+    header.header
+      .container
+        nav.navbar
+          h1.logo Đặt Sân Thể Thao
+          ul.nav-menu
+            li: a(href='/') Trang chủ
+            li: a(href='/courts') Sân
+            li: a(href='/bookings') Đặt sân
+            li: a(href='/login') Đăng nhập
+            li: a(href='/register') Đăng ký
+    
+    main.main-content
+      .container
+        block content
+    
+    footer.footer
+      .container
+        p &copy; 2025 Hệ Thống Đặt Sân Thể Thao. All rights reserved.
+    
+    block scripts
