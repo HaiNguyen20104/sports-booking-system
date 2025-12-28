@@ -23,11 +23,10 @@ block content
       p Quản lý lịch đặt, thông báo tự động
 
   .cta-section
-    h3 Sẵn sàng đặt sân?
-    .cta-buttons
-      a.btn.btn-primary(href='/api/courts') Xem Danh Sách Sân
-      a.btn.btn-secondary(href='/api/auth/register') Đăng Ký Ngay
+    h3#welcome-message Sẵn sàng đặt sân?
+    .cta-buttons#cta-buttons
+      a.btn.btn-primary(href='/courts') Xem Danh Sách Sân
+      a.btn.btn-secondary.auth-only(href='/register') Đăng Ký Ngay
 
 block scripts
-  script.
-    console.log('Sports Booking System initialized');
+  script(src='/js/home.js')

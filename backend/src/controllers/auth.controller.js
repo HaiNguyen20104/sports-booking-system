@@ -1,4 +1,5 @@
 const authService = require('../services/auth.service');
+const emailService = require('../services/email.service');
 const ApiResponse = require('../utils/apiResponse');
 
 class AuthController {
@@ -14,19 +15,37 @@ class AuthController {
         role
       });
 
-      // Send verification email with result.verificationToken
-      // For now, return the token in response (in production, send via email)
-
-      return ApiResponse.success(
-        res,
-        {
-          user: result.user,
-          message: 'Registration successful. Please verify your email.',
-          verificationToken: result.verificationToken
-        },
-        'User registered successfully',
-        201
-      );
+      // Send verification email
+      try {
+        await emailService.sendVerificationEmail(
+          email,
+          full_name,
+          result.verificationToken
+        );
+        
+        return ApiResponse.success(
+          res,
+          {
+            user: result.user,
+            message: 'Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.'
+          },
+          'User registered successfully',
+          201
+        );
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        // Still return success but with token in response as fallback
+        return ApiResponse.success(
+          res,
+          {
+            user: result.user,
+            message: 'Đăng ký thành công! Không thể gửi email xác thực. Vui lòng sử dụng token bên dưới.',
+            verificationToken: result.verificationToken
+          },
+          'User registered successfully',
+          201
+        );
+      }
     } catch (error) {
       if (error.message === 'Email already registered') {
         return ApiResponse.badRequest(res, error.message);

@@ -1,0 +1,29 @@
+extends ../layouts/main
+
+block content
+  .auth-container
+    .auth-card
+      h2.auth-title Xác thực Email
+      
+      .alert.alert-error(style="display: none;" id="error-message")
+      .alert.alert-success(style="display: none;" id="success-message")
+      
+      #verify-form-container
+        p.text-center Nhập mã xác thực từ email hoặc click vào link trong email.
+        
+        form#verify-form.auth-form
+          .form-group
+            label(for="token") Mã xác thực
+            textarea#token.form-control(name="token" rows="4" placeholder="Dán token từ email hoặc từ response đăng ký" required)
+            small.form-hint Token được gửi trong email hoặc nhận sau khi đăng ký
+          
+          button.btn.btn-primary.btn-block(type="submit") Xác thực Email
+      
+      .auth-footer
+        p Đã xác thực? 
+          a(href="/login") Đăng nhập ngay
+        p
+          a(href="/register") Đăng ký lại
+
+block scripts
+  script(src="/js/verify-email.js")
