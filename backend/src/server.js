@@ -64,6 +64,18 @@ app.get('/profile', (req, res) => {
   });
 });
 
+app.get('/forgot-password', (req, res) => {
+  res.render('pages/forgot-password', {
+    title: 'Quên mật khẩu'
+  });
+});
+
+app.get('/reset-password', (req, res) => {
+  res.render('pages/reset-password', {
+    title: 'Đặt lại mật khẩu'
+  });
+});
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ 

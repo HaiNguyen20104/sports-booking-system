@@ -6,7 +6,9 @@ const authMiddleware = require('../middlewares/auth.middleware');
 const { 
   registerValidation, 
   loginValidation, 
-  verifyEmailValidation 
+  verifyEmailValidation,
+  forgotPasswordValidation,
+  resetPasswordValidation
 } = require('../validators/auth.validator');
 
 // Public routes
@@ -19,12 +21,9 @@ router.post('/verify-email', verifyEmailValidation, validate, authController.ver
 // Protected routes
 router.get('/profile', authMiddleware, authController.getProfile);
 
-router.post('/forgot-password', (req, res) => {
-  res.json({ message: 'Forgot password endpoint' });
-});
+// Password reset routes
+router.post('/forgot-password', forgotPasswordValidation, validate, authController.forgotPassword);
 
-router.post('/reset-password', (req, res) => {
-  res.json({ message: 'Reset password endpoint' });
-});
+router.post('/reset-password', resetPasswordValidation, validate, authController.resetPassword);
 
 module.exports = router;

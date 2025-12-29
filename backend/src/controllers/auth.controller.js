@@ -117,6 +117,81 @@ class AuthController {
       return ApiResponse.error(res, 'Failed to get profile');
     }
   }
+
+  async forgotPassword(req, res) {
+    try {
+      const { email } = req.body;
+
+      const result = await authService.forgotPassword(email);
+
+      // Send password reset email
+      try {
+        await emailService.sendPasswordResetEmail(
+          result.email,
+          result.full_name,
+          result.resetToken
+        );
+
+        return ApiResponse.success(
+          res,
+          {
+            message: 'Email đặt lại mật khẩu đã được gửi! Vui lòng kiểm tra hộp thư của bạn.'
+          },
+          'Password reset email sent successfully'
+        );
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        // Still return success but with token in response as fallback
+        return ApiResponse.success(
+          res,
+          {
+            message: 'Không thể gửi email. Vui lòng sử dụng token bên dưới để đặt lại mật khẩu.',
+            resetToken: result.resetToken
+          },
+          'Password reset token generated'
+        );
+      }
+    } catch (error) {
+      if (error.message === 'No user found with this email') {
+        return ApiResponse.notFound(res, error.message);
+      }
+      console.error('Forgot password error:', error);
+      return ApiResponse.error(res, 'Failed to process forgot password request');
+    }
+  }
+
+  async resetPassword(req, res) {
+    try {
+      const { token, password } = req.body;
+
+      const user = await authService.resetPassword(token, password);
+
+      return ApiResponse.success(
+        res,
+        {
+          id: user.id,
+          email: user.email,
+          full_name: user.full_name,
+          message: 'Mật khẩu đã được đặt lại thành công! Bạn có thể đăng nhập với mật khẩu mới.'
+        },
+        'Password reset successfully'
+      );
+    } catch (error) {
+      if (error.message === 'User not found') {
+        return ApiResponse.notFound(res, error.message);
+      }
+      if (
+        error.message === 'Invalid or expired reset token' ||
+        error.message === 'Reset token has expired' ||
+        error.message === 'Invalid reset token' ||
+        error.message === 'Invalid token purpose'
+      ) {
+        return ApiResponse.badRequest(res, error.message);
+      }
+      console.error('Reset password error:', error);
+      return ApiResponse.error(res, 'Failed to reset password');
+    }
+  }
 }
 
 module.exports = new AuthController();

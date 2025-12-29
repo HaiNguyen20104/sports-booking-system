@@ -66,8 +66,44 @@ const verifyEmailValidation = [
     .withMessage('Verification token is required')
 ];
 
+const forgotPasswordValidation = [
+  body('email')
+    .trim()
+    .notEmpty()
+    .withMessage('Email is required')
+    .isEmail()
+    .withMessage('Invalid email format')
+    .normalizeEmail()
+];
+
+const resetPasswordValidation = [
+  body('token')
+    .notEmpty()
+    .withMessage('Reset token is required'),
+  
+  body('password')
+    .notEmpty()
+    .withMessage('Password is required')
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number'),
+  
+  body('confirmPassword')
+    .notEmpty()
+    .withMessage('Confirm password is required')
+    .custom((value, { req }) => {
+      if (value !== req.body.password) {
+        throw new Error('Passwords do not match');
+      }
+      return true;
+    })
+];
+
 module.exports = {
   registerValidation,
   loginValidation,
-  verifyEmailValidation
+  verifyEmailValidation,
+  forgotPasswordValidation,
+  resetPasswordValidation
 };

@@ -40,6 +40,14 @@ module.exports = (sequelize) => {
       allowNull: false,
       defaultValue: false
     },
+    reset_password_token: {
+      type: DataTypes.STRING(500),
+      allowNull: true
+    },
+    reset_password_expires: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,
