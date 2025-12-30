@@ -1,0 +1,46 @@
+extends ../layouts/main
+
+block content
+  .auth-container
+    .auth-card
+      h2.auth-title Đăng ký tài khoản
+      
+      .alert.alert-error(style="display: none;" id="error-message")
+      .alert.alert-success(style="display: none;" id="success-message")
+      
+      form#register-form.auth-form
+        .form-group
+          label(for="full_name") Họ và tên *
+          input#full_name.form-control(type="text" name="full_name" required placeholder="Nguyễn Văn A")
+        
+        .form-group
+          label(for="email") Email *
+          input#email.form-control(type="email" name="email" required placeholder="example@email.com")
+        
+        .form-group
+          label(for="phone") Số điện thoại
+          input#phone.form-control(type="text" name="phone" placeholder="0123456789" pattern="[0-9]{10}" maxlength="10")
+        
+        .form-group
+          label(for="password") Mật khẩu *
+          input#password.form-control(type="password" name="password" required placeholder="Tối thiểu 6 ký tự")
+          small.form-hint Phải có chữ hoa, chữ thường và số
+        
+        .form-group
+          label(for="confirmPassword") Xác nhận mật khẩu *
+          input#confirmPassword.form-control(type="password" name="confirmPassword" required placeholder="Nhập lại mật khẩu")
+        
+        .form-group
+          label(for="role") Vai trò
+          select#role.form-control(name="role")
+            option(value="customer" selected) Người dùng
+            option(value="manager") Chủ sân
+        
+        button.btn.btn-primary.btn-block(type="submit") Đăng ký
+        
+      .auth-footer
+        p Đã có tài khoản? 
+          a(href="/login") Đăng nhập ngay
+
+block scripts
+  script(src="/js/register.js")

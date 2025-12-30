@@ -9,13 +9,21 @@ html(lang='vi')
     header.header
       .container
         nav.navbar
-          h1.logo Đặt Sân Thể Thao
-          ul.nav-menu
+          h1.logo 
+            a(href='/' style='color: white; text-decoration: none;') Đặt Sân Thể Thao
+          ul.nav-menu#main-nav
             li: a(href='/') Trang chủ
             li: a(href='/courts') Sân
             li: a(href='/bookings') Đặt sân
-            li: a(href='/login') Đăng nhập
-            li: a(href='/register') Đăng ký
+            li.auth-links
+              a(href='/login') Đăng nhập
+            li.auth-links
+              a(href='/register') Đăng ký
+            li.user-menu(style='display: none;')
+              a(href='/profile') 
+                span 👤 Hồ sơ
+            li.user-menu(style='display: none;')
+              a(href='#' id='nav-logout') Đăng xuất
     
     main.main-content
       .container
@@ -25,4 +33,5 @@ html(lang='vi')
       .container
         p &copy; 2025 Hệ Thống Đặt Sân Thể Thao. All rights reserved.
     
+    script(src='/js/auth-check.js')
     block scripts
