@@ -18,10 +18,48 @@ const sequelize = new Sequelize(
   }
 );
 
-const db = {
-  sequelize,
-  Sequelize
-};
+const db = {};
+
+// Import models
+db.User = require('./User')(sequelize);
+db.Device = require('./Device')(sequelize);
+db.Court = require('./Court')(sequelize);
+db.CourtPriceSlot = require('./CourtPriceSlot')(sequelize);
+db.Booking = require('./Booking')(sequelize);
+db.Transaction = require('./Transaction')(sequelize);
+db.Notification = require('./Notification')(sequelize);
+
+// Define relationships
+// User relationships
+db.User.hasMany(db.Device, { foreignKey: 'tblUserId', as: 'devices' });
+db.User.hasMany(db.Court, { foreignKey: 'owner_id', as: 'courts' });
+db.User.hasMany(db.Booking, { foreignKey: 'tblUserId', as: 'bookings' });
+db.User.hasMany(db.Notification, { foreignKey: 'tblUserId', as: 'notifications' });
+
+// Device relationships
+db.Device.belongsTo(db.User, { foreignKey: 'tblUserId', as: 'user' });
+
+// Court relationships
+db.Court.belongsTo(db.User, { foreignKey: 'owner_id', as: 'owner' });
+db.Court.hasMany(db.CourtPriceSlot, { foreignKey: 'tblCourtId', as: 'priceSlots' });
+db.Court.hasMany(db.Booking, { foreignKey: 'tblCourtId', as: 'bookings' });
+
+// CourtPriceSlot relationships
+db.CourtPriceSlot.belongsTo(db.Court, { foreignKey: 'tblCourtId', as: 'court' });
+
+// Booking relationships
+db.Booking.belongsTo(db.User, { foreignKey: 'tblUserId', as: 'user' });
+db.Booking.belongsTo(db.Court, { foreignKey: 'tblCourtId', as: 'court' });
+db.Booking.hasOne(db.Transaction, { foreignKey: 'tblBookingId', as: 'transaction' });
+
+// Transaction relationships
+db.Transaction.belongsTo(db.Booking, { foreignKey: 'tblBookingId', as: 'booking' });
+
+// Notification relationships
+db.Notification.belongsTo(db.User, { foreignKey: 'tblUserId', as: 'user' });
+
+db.sequelize = sequelize;
+db.Sequelize = Sequelize;
 
 // Test connection
 sequelize

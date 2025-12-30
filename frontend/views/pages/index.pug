@@ -1,0 +1,33 @@
+extends ../layouts/main
+
+block content
+  .hero-section
+    h2.hero-title= title
+    p.hero-subtitle= message
+    
+  .features-section
+    .feature-card
+      h3 Đa Dạng Sân
+      p Nhiều loại sân: bóng đá, tennis, cầu lông, bóng rổ
+      
+    .feature-card
+      h3 Đặt Nhanh
+      p Đặt sân chỉ trong vài phút, thanh toán dễ dàng
+      
+    .feature-card
+      h3 Giá Tốt
+      p Giá cả hợp lý, nhiều ưu đãi hấp dẫn
+      
+    .feature-card
+      h3 Quản Lý Dễ
+      p Quản lý lịch đặt, thông báo tự động
+
+  .cta-section
+    h3 Sẵn sàng đặt sân?
+    .cta-buttons
+      a.btn.btn-primary(href='/api/courts') Xem Danh Sách Sân
+      a.btn.btn-secondary(href='/api/auth/register') Đăng Ký Ngay
+
+block scripts
+  script.
+    console.log('Sports Booking System initialized');
