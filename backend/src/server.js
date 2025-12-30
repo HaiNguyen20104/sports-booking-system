@@ -39,6 +39,43 @@ app.get('/', (req, res) => {
   });
 });
 
+// Auth pages
+app.get('/register', (req, res) => {
+  res.render('pages/register', {
+    title: 'Đăng ký tài khoản'
+  });
+});
+
+app.get('/login', (req, res) => {
+  res.render('pages/login', {
+    title: 'Đăng nhập'
+  });
+});
+
+app.get('/verify-email', (req, res) => {
+  res.render('pages/verify-email', {
+    title: 'Xác thực Email'
+  });
+});
+
+app.get('/profile', (req, res) => {
+  res.render('pages/profile', {
+    title: 'Thông tin cá nhân'
+  });
+});
+
+app.get('/forgot-password', (req, res) => {
+  res.render('pages/forgot-password', {
+    title: 'Quên mật khẩu'
+  });
+});
+
+app.get('/reset-password', (req, res) => {
+  res.render('pages/reset-password', {
+    title: 'Đặt lại mật khẩu'
+  });
+});
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ 

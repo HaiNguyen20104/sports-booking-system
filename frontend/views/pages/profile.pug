@@ -1,0 +1,18 @@
+extends ../layouts/main
+
+block content
+  .profile-container
+    .profile-card
+      h2.profile-title Thông tin cá nhân
+      
+      .alert.alert-error(style="display: none;" id="error-message")
+      
+      #profile-content.profile-content
+        .loading-spinner Đang tải...
+      
+      .profile-actions
+        a.btn.btn-primary(href="/bookings") Lịch đặt sân
+        button.btn.btn-secondary#logout-btn Đăng xuất
+
+block scripts
+  script(src="/js/profile.js")
