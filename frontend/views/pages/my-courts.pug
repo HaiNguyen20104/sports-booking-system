@@ -1,0 +1,61 @@
+extends ../layouts/main
+
+block content
+  .courts-container
+    .courts-header
+      h2.courts-title Sân Của Tôi
+      a.btn.btn-primary(href="/add-court") + Thêm Sân Mới
+    
+    .alert.alert-error(style="display: none;" id="error-message")
+    .alert.alert-success(style="display: none;" id="success-message")
+    
+    #courts-list.courts-list
+      .loading-spinner Đang tải danh sách sân...
+
+  //- Edit Court Modal
+  #edit-court-modal.modal(style="display: none;")
+    .modal-overlay
+    .modal-content
+      .modal-header
+        h3.modal-title Chỉnh Sửa Sân
+        button.modal-close(type="button" onclick="closeEditModal()") ×
+      
+      .alert.alert-error(style="display: none;" id="edit-error-message")
+      
+      form#edit-court-form
+        input(type="hidden" id="edit-court-id")
+        
+        .form-group
+          label(for="edit-name") Tên sân *
+          input.form-control#edit-name(type="text" name="name" required)
+        
+        .form-group
+          label(for="edit-location") Địa điểm *
+          input.form-control#edit-location(type="text" name="location" required)
+        
+        .form-group
+          label(for="edit-description") Mô tả
+          textarea.form-control#edit-description(name="description" rows="3")
+        
+        .form-row
+          .form-group.half
+            label(for="edit-slot_duration") Thời lượng mỗi slot (phút)
+            select.form-control#edit-slot_duration(name="slot_duration")
+              option(value="30") 30 phút
+              option(value="60") 60 phút
+              option(value="90") 90 phút
+              option(value="120") 120 phút
+          
+          .form-group.half
+            label(for="edit-status") Trạng thái
+            select.form-control#edit-status(name="status")
+              option(value="active") Hoạt động
+              option(value="inactive") Tạm ngưng
+              option(value="maintenance") Bảo trì
+        
+        .modal-actions
+          button.btn.btn-secondary(type="button" onclick="closeEditModal()") Hủy
+          button.btn.btn-primary(type="submit" id="edit-submit-btn") Lưu thay đổi
+
+block scripts
+  script(src="/js/my-courts.js")

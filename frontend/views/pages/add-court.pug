@@ -1,0 +1,47 @@
+extends ../layouts/main
+
+block content
+  .court-container
+    .court-card
+      h2.court-title Thêm Sân Mới
+      p.court-subtitle Điền thông tin để thêm sân thể thao của bạn
+      
+      .alert.alert-error(style="display: none;" id="error-message")
+      .alert.alert-success(style="display: none;" id="success-message")
+      
+      form.court-form#add-court-form
+        .form-group
+          label(for="name") Tên sân *
+          input.form-control#name(type="text" name="name" placeholder="VD: Sân bóng đá mini ABC" required)
+        
+        .form-group
+          label(for="location") Địa điểm *
+          input.form-control#location(type="text" name="location" placeholder="VD: 123 Đường ABC, Quận 1, TP.HCM" required)
+        
+        .form-group
+          label(for="description") Mô tả
+          textarea.form-control#description(name="description" rows="3" placeholder="Mô tả về sân, tiện ích, quy định...")
+        
+        .form-row
+          .form-group.half
+            label(for="slot_duration") Thời lượng mỗi slot (phút)
+            select.form-control#slot_duration(name="slot_duration")
+              option(value="30") 30 phút
+              option(value="60" selected) 60 phút
+              option(value="90") 90 phút
+              option(value="120") 120 phút
+          
+          .form-group.half
+            label(for="status") Trạng thái
+            select.form-control#status(name="status")
+              option(value="active") Hoạt động
+              option(value="inactive") Tạm ngưng
+              option(value="maintenance") Bảo trì
+        
+        button.btn.btn-primary.btn-block(type="submit" id="submit-btn") Thêm Sân
+      
+      .court-footer
+        a(href="/my-courts") ← Quay lại danh sách sân
+
+block scripts
+  script(src="/js/add-court.js")
