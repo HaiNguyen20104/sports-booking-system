@@ -5,7 +5,7 @@ const { generateId } = require('../utils/generateId');
 const config = require('../config');
 
 class AuthService {
-  async register(userData) {
+  async prepareRegistration(userData) {
     const { full_name, email, phone, password, role } = userData;
 
     // Check if email already exists
@@ -20,8 +20,8 @@ class AuthService {
     // Generate user ID
     const userId = generateId('U', 10);
 
-    // Create user
-    const user = await db.User.create({
+    // Prepare user data (not saved yet)
+    const userPreparedData = {
       id: userId,
       full_name,
       email,
@@ -29,25 +29,32 @@ class AuthService {
       password: hashedPassword,
       role: role || 'customer',
       is_verified: false
-    });
+    };
 
     // Generate verification token (for email verification)
     const verificationToken = jwt.sign(
-      { userId: user.id, email: user.email },
+      { userId: userId, email: email },
       config.jwtSecret,
       { expiresIn: '24h' }
     );
 
     return {
-      user: {
-        id: user.id,
-        full_name: user.full_name,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-        is_verified: user.is_verified
-      },
+      userPreparedData,
       verificationToken
+    };
+  }
+
+  async saveUser(userPreparedData) {
+    // Create user in database
+    const user = await db.User.create(userPreparedData);
+
+    return {
+      id: user.id,
+      full_name: user.full_name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      is_verified: user.is_verified
     };
   }
 
@@ -144,6 +151,15 @@ class AuthService {
       email: user.email,
       full_name: user.full_name
     };
+  }
+
+  async clearResetToken(email) {
+    const user = await db.User.findOne({ where: { email } });
+    if (user) {
+      user.reset_password_token = null;
+      user.reset_password_expires = null;
+      await user.save();
+    }
   }
 
   async resetPassword(token, newPassword) {

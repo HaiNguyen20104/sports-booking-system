@@ -7,7 +7,7 @@ class AuthController {
     try {
       const { full_name, email, phone, password, role } = req.body;
 
-      const result = await authService.register({
+      const result = await authService.prepareRegistration({
         full_name,
         email,
         phone,
@@ -22,30 +22,28 @@ class AuthController {
           full_name,
           result.verificationToken
         );
-        
-        return ApiResponse.success(
-          res,
-          {
-            user: result.user,
-            message: 'Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.'
-          },
-          'User registered successfully',
-          201
-        );
       } catch (emailError) {
         console.error('Email sending failed:', emailError);
-        // Still return success but with token in response as fallback
-        return ApiResponse.success(
+        // If email fails, don't create user - return error
+        return ApiResponse.error(
           res,
-          {
-            user: result.user,
-            message: 'Đăng ký thành công! Không thể gửi email xác thực. Vui lòng sử dụng token bên dưới.',
-            verificationToken: result.verificationToken
-          },
-          'User registered successfully',
-          201
+          'Không thể gửi email xác thực. Vui lòng thử lại sau.',
+          500
         );
       }
+
+      // Only save user to DB if email was sent successfully
+      const user = await authService.saveUser(result.userPreparedData);
+        
+      return ApiResponse.success(
+        res,
+        {
+          user: user,
+          message: 'Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.'
+        },
+        'User registered successfully',
+        201
+      );
     } catch (error) {
       if (error.message === 'Email already registered') {
         return ApiResponse.badRequest(res, error.message);
@@ -141,14 +139,12 @@ class AuthController {
         );
       } catch (emailError) {
         console.error('Email sending failed:', emailError);
-        // Still return success but with token in response as fallback
-        return ApiResponse.success(
+        // If email fails, clear the reset token and return error
+        await authService.clearResetToken(result.email);
+        return ApiResponse.error(
           res,
-          {
-            message: 'Không thể gửi email. Vui lòng sử dụng token bên dưới để đặt lại mật khẩu.',
-            resetToken: result.resetToken
-          },
-          'Password reset token generated'
+          'Không thể gửi email đặt lại mật khẩu. Vui lòng thử lại sau.',
+          500
         );
       }
     } catch (error) {
