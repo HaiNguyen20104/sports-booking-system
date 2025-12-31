@@ -1,5 +1,7 @@
 const db = require('../models');
 const { generateId } = require('../utils/generateId');
+const AppError = require('../utils/AppError');
+const { ERROR_CODES, MESSAGES } = require('../constants');
 
 class CourtService {
   async createCourt(courtData, ownerId) {
@@ -7,7 +9,7 @@ class CourtService {
 
     // Validate required fields
     if (!name || !location) {
-      throw new Error('Tên sân và địa điểm là bắt buộc');
+      throw AppError.badRequest(ERROR_CODES.COURT_REQUIRED_FIELDS, MESSAGES.ERROR.COURT_REQUIRED_FIELDS);
     }
 
     const courtId = generateId('C', 10);
@@ -58,7 +60,7 @@ class CourtService {
     });
 
     if (!court) {
-      throw new Error('Court not found');
+      throw AppError.notFound(ERROR_CODES.COURT_NOT_FOUND, MESSAGES.ERROR.COURT_NOT_FOUND);
     }
 
     return court;
@@ -80,12 +82,12 @@ class CourtService {
     });
 
     if (!court) {
-      throw new Error('Court not found');
+      throw AppError.notFound(ERROR_CODES.COURT_NOT_FOUND, MESSAGES.ERROR.COURT_NOT_FOUND);
     }
 
-    // Check if user is owner or admin (admin can manage all courts)
-    if (court.owner_id !== userId && userRole !== 'admin') {
-      throw new Error('Permission denied');
+    // Check if user is owner or admin
+    if (court.owner_id !== userId && userRole !== 'admin' && userRole !== 'manager') {
+      throw AppError.forbidden(ERROR_CODES.PERMISSION_DENIED, MESSAGES.ERROR.PERMISSION_DENIED);
     }
 
     // Update court
@@ -106,12 +108,12 @@ class CourtService {
     });
 
     if (!court) {
-      throw new Error('Court not found');
+      throw AppError.notFound(ERROR_CODES.COURT_NOT_FOUND, MESSAGES.ERROR.COURT_NOT_FOUND);
     }
 
-    // Check if user is owner or admin (admin can manage all courts)
-    if (court.owner_id !== userId && userRole !== 'admin') {
-      throw new Error('Permission denied');
+    // Check if user is owner or admin
+    if (court.owner_id !== userId && userRole !== 'admin' && userRole !== 'manager') {
+      throw AppError.forbidden(ERROR_CODES.PERMISSION_DENIED, MESSAGES.ERROR.PERMISSION_DENIED);
     }
 
     // Soft delete

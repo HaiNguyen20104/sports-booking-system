@@ -1,5 +1,6 @@
 const courtService = require('../services/court.service');
 const ApiResponse = require('../utils/apiResponse');
+const { ERROR_CODES, MESSAGES } = require('../constants');
 
 class CourtController {
   async createCourt(req, res) {
@@ -17,43 +18,43 @@ class CourtController {
       );
     } catch (error) {
       console.error('Create court error:', error);
-      if (error.message === 'Tên sân và địa điểm là bắt buộc') {
-        return ApiResponse.badRequest(res, error.message);
+      if (error.code === ERROR_CODES.COURT_REQUIRED_FIELDS) {
+        return ApiResponse.badRequest(res, MESSAGES.ERROR.COURT_REQUIRED_FIELDS);
       }
-      return ApiResponse.error(res, 'Không thể tạo sân. Vui lòng thử lại.');
+      return ApiResponse.error(res, MESSAGES.ERROR.COURT_CREATE_FAILED);
     }
   }
 
   async getAllCourts(req, res) {
     try {
       const courts = await courtService.getAllCourts();
-      return ApiResponse.success(res, courts, 'Lấy danh sách sân thành công');
+      return ApiResponse.success(res, courts, MESSAGES.SUCCESS.COURT_LIST_FETCHED);
     } catch (error) {
       console.error('Get all courts error:', error);
-      return ApiResponse.error(res, 'Không thể lấy danh sách sân');
+      return ApiResponse.error(res, MESSAGES.ERROR.COURT_LIST_FAILED);
     }
   }
 
   async getCourtById(req, res) {
     try {
       const court = await courtService.getCourtById(req.params.id);
-      return ApiResponse.success(res, court, 'Lấy thông tin sân thành công');
+      return ApiResponse.success(res, court, MESSAGES.SUCCESS.COURT_FETCHED);
     } catch (error) {
       console.error('Get court by id error:', error);
-      if (error.message === 'Court not found') {
-        return ApiResponse.notFound(res, 'Không tìm thấy sân');
+      if (error.code === ERROR_CODES.COURT_NOT_FOUND) {
+        return ApiResponse.notFound(res, MESSAGES.ERROR.COURT_NOT_FOUND);
       }
-      return ApiResponse.error(res, 'Không thể lấy thông tin sân');
+      return ApiResponse.error(res, MESSAGES.ERROR.COURT_LIST_FAILED);
     }
   }
 
   async getMyCourts(req, res) {
     try {
       const courts = await courtService.getMyCourts(req.user.id);
-      return ApiResponse.success(res, courts, 'Lấy danh sách sân của bạn thành công');
+      return ApiResponse.success(res, courts, MESSAGES.SUCCESS.MY_COURTS_FETCHED);
     } catch (error) {
       console.error('Get my courts error:', error);
-      return ApiResponse.error(res, 'Không thể lấy danh sách sân của bạn');
+      return ApiResponse.error(res, MESSAGES.ERROR.COURT_LIST_FAILED);
     }
   }
 
@@ -73,13 +74,13 @@ class CourtController {
       );
     } catch (error) {
       console.error('Update court error:', error);
-      if (error.message === 'Court not found') {
-        return ApiResponse.notFound(res, 'Không tìm thấy sân');
+      if (error.code === ERROR_CODES.COURT_NOT_FOUND) {
+        return ApiResponse.notFound(res, MESSAGES.ERROR.COURT_NOT_FOUND);
       }
-      if (error.message === 'Permission denied') {
-        return ApiResponse.forbidden(res, 'Bạn không có quyền chỉnh sửa sân này');
+      if (error.code === ERROR_CODES.PERMISSION_DENIED) {
+        return ApiResponse.forbidden(res, MESSAGES.ERROR.COURT_PERMISSION_DENIED);
       }
-      return ApiResponse.error(res, 'Không thể cập nhật sân');
+      return ApiResponse.error(res, MESSAGES.ERROR.COURT_UPDATE_FAILED);
     }
   }
 
@@ -89,18 +90,18 @@ class CourtController {
 
       return ApiResponse.success(
         res,
-        { message: 'Xóa sân thành công!' },
+        { message: MESSAGES.SUCCESS.COURT_DELETED },
         'Court deleted successfully'
       );
     } catch (error) {
       console.error('Delete court error:', error);
-      if (error.message === 'Court not found') {
-        return ApiResponse.notFound(res, 'Không tìm thấy sân');
+      if (error.code === ERROR_CODES.COURT_NOT_FOUND) {
+        return ApiResponse.notFound(res, MESSAGES.ERROR.COURT_NOT_FOUND);
       }
-      if (error.message === 'Permission denied') {
-        return ApiResponse.forbidden(res, 'Bạn không có quyền xóa sân này');
+      if (error.code === ERROR_CODES.PERMISSION_DENIED) {
+        return ApiResponse.forbidden(res, MESSAGES.ERROR.COURT_PERMISSION_DENIED);
       }
-      return ApiResponse.error(res, 'Không thể xóa sân');
+      return ApiResponse.error(res, MESSAGES.ERROR.COURT_DELETE_FAILED);
     }
   }
 }
