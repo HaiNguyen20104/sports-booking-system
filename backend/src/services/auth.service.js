@@ -4,7 +4,7 @@ const db = require('../models');
 const { generateId } = require('../utils/generateId');
 const config = require('../config');
 const AppError = require('../utils/AppError');
-const { ERROR_CODES, MESSAGES } = require('../constants');
+const { ERROR_CODES, MESSAGES, ROLES } = require('../constants');
 
 class AuthService {
   async prepareRegistration(userData) {
@@ -29,7 +29,7 @@ class AuthService {
       email,
       phone: phone || null,
       password: hashedPassword,
-      role: role || 'customer',
+      role: role || ROLES.CUSTOMER,
       is_verified: false
     };
 

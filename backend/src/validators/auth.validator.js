@@ -1,4 +1,5 @@
 const { body } = require('express-validator');
+const { ALL_ROLES } = require('../constants');
 
 const registerValidation = [
   body('full_name')
@@ -42,7 +43,7 @@ const registerValidation = [
   
   body('role')
     .optional()
-    .isIn(['customer', 'admin', 'manager'])
+    .isIn(ALL_ROLES)
     .withMessage('Invalid role')
 ];
 

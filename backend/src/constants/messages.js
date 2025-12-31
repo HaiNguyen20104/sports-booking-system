@@ -23,6 +23,7 @@ const MESSAGES = {
     // Common
     INTERNAL_ERROR: 'Đã có lỗi xảy ra. Vui lòng thử lại.',
     PERMISSION_DENIED: 'Bạn không có quyền thực hiện hành động này',
+    VALIDATION_FAILED: 'Dữ liệu không hợp lệ',
     
     // Auth
     INVALID_CREDENTIALS: 'Email hoặc mật khẩu không đúng',
@@ -30,6 +31,11 @@ const MESSAGES = {
     EMAIL_ALREADY_EXISTS: 'Email đã được đăng ký',
     EMAIL_ALREADY_VERIFIED: 'Email đã được xác thực',
     UNAUTHORIZED: 'Vui lòng đăng nhập',
+    TOKEN_REQUIRED: 'Access token là bắt buộc',
+    TOKEN_EXPIRED: 'Token đã hết hạn',
+    TOKEN_INVALID: 'Token không hợp lệ',
+    AUTH_REQUIRED: 'Yêu cầu xác thực',
+    ACCESS_DENIED: 'Truy cập bị từ chối. Bạn không có quyền.',
     REGISTER_FAILED: 'Đăng ký thất bại',
     LOGIN_FAILED: 'Đăng nhập thất bại',
     VERIFICATION_FAILED: 'Xác thực email thất bại',

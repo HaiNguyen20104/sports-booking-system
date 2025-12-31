@@ -1,7 +1,7 @@
 const db = require('../models');
 const { generateId } = require('../utils/generateId');
 const AppError = require('../utils/AppError');
-const { ERROR_CODES, MESSAGES } = require('../constants');
+const { ERROR_CODES, MESSAGES, ROLES, COURT_DEFAULTS } = require('../constants');
 
 class CourtService {
   async createCourt(courtData, ownerId) {
@@ -20,8 +20,8 @@ class CourtService {
       name,
       location,
       description: description || null,
-      status: status || 'active',
-      slot_duration: slot_duration || 60,
+      status: status || COURT_DEFAULTS.STATUS,
+      slot_duration: slot_duration || COURT_DEFAULTS.SLOT_DURATION,
       owner_id: ownerId
     });
 
@@ -86,7 +86,7 @@ class CourtService {
     }
 
     // Check if user is owner or admin
-    if (court.owner_id !== userId && userRole !== 'admin' && userRole !== 'manager') {
+    if (court.owner_id !== userId && userRole !== ROLES.ADMIN && userRole !== ROLES.MANAGER) {
       throw AppError.forbidden(ERROR_CODES.PERMISSION_DENIED, MESSAGES.ERROR.PERMISSION_DENIED);
     }
 
@@ -112,7 +112,7 @@ class CourtService {
     }
 
     // Check if user is owner or admin
-    if (court.owner_id !== userId && userRole !== 'admin' && userRole !== 'manager') {
+    if (court.owner_id !== userId && userRole !== ROLES.ADMIN && userRole !== ROLES.MANAGER) {
       throw AppError.forbidden(ERROR_CODES.PERMISSION_DENIED, MESSAGES.ERROR.PERMISSION_DENIED);
     }
 
