@@ -2,25 +2,19 @@ const authService = require('../services/auth.service');
 const emailService = require('../services/email.service');
 const ApiResponse = require('../utils/apiResponse');
 const { ERROR_CODES, MESSAGES } = require('../constants');
+const { RegisterDTO, LoginDTO, VerifyEmailDTO, ForgotPasswordDTO, ResetPasswordDTO } = require('../dtos');
 
 class AuthController {
   async register(req, res) {
     try {
-      const { full_name, email, phone, password, role } = req.body;
-
-      const result = await authService.prepareRegistration({
-        full_name,
-        email,
-        phone,
-        password,
-        role
-      });
+      const registerDTO = new RegisterDTO(req.body);
+      const result = await authService.prepareRegistration(registerDTO);
 
       // Send verification email
       try {
         await emailService.sendVerificationEmail(
-          email,
-          full_name,
+          registerDTO.email,
+          registerDTO.full_name,
           result.verificationToken
         );
       } catch (emailError) {
@@ -56,9 +50,8 @@ class AuthController {
 
   async login(req, res) {
     try {
-      const { email, password } = req.body;
-
-      const result = await authService.login(email, password);
+      const loginDTO = new LoginDTO(req.body);
+      const result = await authService.login(loginDTO);
 
       return ApiResponse.success(
         res,
@@ -79,9 +72,8 @@ class AuthController {
 
   async verifyEmail(req, res) {
     try {
-      const { token } = req.body;
-
-      const user = await authService.verifyEmail(token);
+      const verifyEmailDTO = new VerifyEmailDTO(req.body);
+      const user = await authService.verifyEmail(verifyEmailDTO);
 
       return ApiResponse.success(
         res,
@@ -119,9 +111,8 @@ class AuthController {
 
   async forgotPassword(req, res) {
     try {
-      const { email } = req.body;
-
-      const result = await authService.forgotPassword(email);
+      const forgotPasswordDTO = new ForgotPasswordDTO(req.body);
+      const result = await authService.forgotPassword(forgotPasswordDTO);
 
       // Send password reset email
       try {
@@ -159,9 +150,8 @@ class AuthController {
 
   async resetPassword(req, res) {
     try {
-      const { token, password } = req.body;
-
-      const user = await authService.resetPassword(token, password);
+      const resetPasswordDTO = new ResetPasswordDTO(req.body);
+      const user = await authService.resetPassword(resetPasswordDTO);
 
       return ApiResponse.success(
         res,

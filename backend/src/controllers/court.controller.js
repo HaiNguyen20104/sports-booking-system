@@ -1,17 +1,19 @@
 const courtService = require('../services/court.service');
 const ApiResponse = require('../utils/apiResponse');
 const { ERROR_CODES, MESSAGES } = require('../constants');
+const { CreateCourtDTO, UpdateCourtDTO, DeleteCourtDTO } = require('../dtos');
 
 class CourtController {
   async createCourt(req, res) {
     try {
-      const court = await courtService.createCourt(req.body, req.user.id);
+      const createCourtDTO = new CreateCourtDTO(req.body, req.user.id);
+      const court = await courtService.createCourt(createCourtDTO);
 
       return ApiResponse.success(
         res,
         {
           court,
-          message: 'Thêm sân thành công!'
+          message: MESSAGES.SUCCESS.COURT_CREATED
         },
         'Court created successfully',
         201
@@ -60,16 +62,12 @@ class CourtController {
 
   async updateCourt(req, res) {
     try {
-      const court = await courtService.updateCourt(
-        req.params.id,
-        req.body,
-        req.user.id,
-        req.user.role
-      );
+      const updateCourtDTO = new UpdateCourtDTO(req.body, req.params.id, req.user);
+      const court = await courtService.updateCourt(updateCourtDTO);
 
       return ApiResponse.success(
         res,
-        { court, message: 'Cập nhật sân thành công!' },
+        { court, message: MESSAGES.SUCCESS.COURT_UPDATED },
         'Court updated successfully'
       );
     } catch (error) {
@@ -86,7 +84,8 @@ class CourtController {
 
   async deleteCourt(req, res) {
     try {
-      await courtService.deleteCourt(req.params.id, req.user.id, req.user.role);
+      const deleteCourtDTO = new DeleteCourtDTO(req.params.id, req.user);
+      await courtService.deleteCourt(deleteCourtDTO);
 
       return ApiResponse.success(
         res,

@@ -1,4 +1,5 @@
 const { DataTypes } = require('sequelize');
+const { ROLES, COURT_STATUS, ALL_COURT_STATUS } = require('../constants');
 
 module.exports = (sequelize) => {
   const Court = sequelize.define('Court', {
@@ -22,9 +23,9 @@ module.exports = (sequelize) => {
     status: {
       type: DataTypes.STRING(255),
       allowNull: false,
-      defaultValue: 'active',
+      defaultValue: COURT_STATUS.ACTIVE,
       validate: {
-        isIn: [['active', 'inactive', 'maintenance']]
+        isIn: [ALL_COURT_STATUS]
       }
     },
     is_deleted: {
@@ -54,6 +55,11 @@ module.exports = (sequelize) => {
     tableName: 'tblCourts',
     timestamps: false
   });
+
+  // Check if user can modify this court
+  Court.prototype.canModify = function(userId, userRole) {
+    return this.owner_id === userId || userRole === ROLES.ADMIN;
+  };
 
   return Court;
 };

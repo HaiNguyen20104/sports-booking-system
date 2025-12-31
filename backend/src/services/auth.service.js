@@ -7,8 +7,8 @@ const AppError = require('../utils/AppError');
 const { ERROR_CODES, MESSAGES, ROLES } = require('../constants');
 
 class AuthService {
-  async prepareRegistration(userData) {
-    const { full_name, email, phone, password, role } = userData;
+  async prepareRegistration(registerDTO) {
+    const { full_name, email, phone, password, role } = registerDTO;
 
     // Check if email already exists
     const existingUser = await db.User.findOne({ where: { email } });
@@ -60,7 +60,9 @@ class AuthService {
     };
   }
 
-  async login(email, password) {
+  async login(loginDTO) {
+    const { email, password } = loginDTO;
+
     // Find user by email
     const user = await db.User.findOne({ where: { email } });
     if (!user) {
@@ -101,7 +103,9 @@ class AuthService {
     };
   }
 
-  async verifyEmail(token) {
+  async verifyEmail(verifyEmailDTO) {
+    const { token } = verifyEmailDTO;
+
     try {
       const decoded = jwt.verify(token, config.jwtSecret);
       
@@ -127,7 +131,9 @@ class AuthService {
     }
   }
 
-  async forgotPassword(email) {
+  async forgotPassword(forgotPasswordDTO) {
+    const { email } = forgotPasswordDTO;
+
     const user = await db.User.findOne({ where: { email } });
     if (!user) {
       throw AppError.notFound(ERROR_CODES.USER_NOT_FOUND, MESSAGES.ERROR.USER_NOT_FOUND);
@@ -164,7 +170,9 @@ class AuthService {
     }
   }
 
-  async resetPassword(token, newPassword) {
+  async resetPassword(resetPasswordDTO) {
+    const { token, password } = resetPasswordDTO;
+
     try {
       // Verify token
       const decoded = jwt.verify(token, config.jwtSecret);
@@ -189,7 +197,7 @@ class AuthService {
       }
 
       // Hash new password
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      const hashedPassword = await bcrypt.hash(password, 10);
 
       // Update password and clear reset token
       user.password = hashedPassword;

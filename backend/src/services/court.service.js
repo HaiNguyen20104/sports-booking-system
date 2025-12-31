@@ -1,11 +1,11 @@
 const db = require('../models');
 const { generateId } = require('../utils/generateId');
 const AppError = require('../utils/AppError');
-const { ERROR_CODES, MESSAGES, ROLES, COURT_DEFAULTS } = require('../constants');
+const { ERROR_CODES, MESSAGES, COURT_DEFAULTS } = require('../constants');
 
 class CourtService {
-  async createCourt(courtData, ownerId) {
-    const { name, location, description, status, slot_duration } = courtData;
+  async createCourt(createCourtDTO) {
+    const { name, location, description, status, slot_duration, ownerId } = createCourtDTO;
 
     // Validate required fields
     if (!name || !location) {
@@ -74,45 +74,44 @@ class CourtService {
     return courts;
   }
 
-  async updateCourt(id, updateData, userId, userRole) {
-    const { name, location, description, status, slot_duration } = updateData;
+  async updateCourt(updateCourtDTO) {
+    const { courtId, changes, userId, userRole } = updateCourtDTO;
+
+    // Kiểm tra có gì để update không
+    if (!updateCourtDTO.hasChanges()) {
+      throw AppError.badRequest(ERROR_CODES.NO_CHANGES, MESSAGES.ERROR.NO_CHANGES);
+    }
 
     const court = await db.Court.findOne({
-      where: { id, is_deleted: false }
+      where: { id: courtId, is_deleted: false }
     });
 
     if (!court) {
       throw AppError.notFound(ERROR_CODES.COURT_NOT_FOUND, MESSAGES.ERROR.COURT_NOT_FOUND);
     }
 
-    // Check if user is owner or admin
-    if (court.owner_id !== userId && userRole !== ROLES.ADMIN && userRole !== ROLES.MANAGER) {
+    if (!court.canModify(userId, userRole)) {
       throw AppError.forbidden(ERROR_CODES.PERMISSION_DENIED, MESSAGES.ERROR.PERMISSION_DENIED);
     }
 
-    // Update court
-    await court.update({
-      name: name || court.name,
-      location: location || court.location,
-      description: description !== undefined ? description : court.description,
-      status: status || court.status,
-      slot_duration: slot_duration || court.slot_duration
-    });
+    // Chỉ update các fields có trong changes (đã được filter bởi DTO)
+    await court.update(changes);
 
     return court;
   }
 
-  async deleteCourt(id, userId, userRole) {
+  async deleteCourt(deleteCourtDTO) {
+    const { courtId, userId, userRole } = deleteCourtDTO;
+
     const court = await db.Court.findOne({
-      where: { id, is_deleted: false }
+      where: { id: courtId, is_deleted: false }
     });
 
     if (!court) {
       throw AppError.notFound(ERROR_CODES.COURT_NOT_FOUND, MESSAGES.ERROR.COURT_NOT_FOUND);
     }
 
-    // Check if user is owner or admin
-    if (court.owner_id !== userId && userRole !== ROLES.ADMIN && userRole !== ROLES.MANAGER) {
+    if (!court.canModify(userId, userRole)) {
       throw AppError.forbidden(ERROR_CODES.PERMISSION_DENIED, MESSAGES.ERROR.PERMISSION_DENIED);
     }
 

@@ -59,6 +59,7 @@ const MESSAGES = {
     COURT_DELETE_FAILED: 'Không thể xóa sân',
     COURT_LIST_FAILED: 'Không thể lấy danh sách sân',
     COURT_PERMISSION_DENIED: 'Bạn không có quyền chỉnh sửa sân này',
+    NO_CHANGES: 'Không có thay đổi nào để cập nhật',
 
     // User
     USER_NOT_FOUND: 'Không tìm thấy người dùng',
