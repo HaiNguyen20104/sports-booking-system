@@ -19,6 +19,13 @@ document.addEventListener('DOMContentLoaded', function () {
   const errorMessage = document.getElementById('error-message');
   const successMessage = document.getElementById('success-message');
   const submitBtn = document.getElementById('submit-btn');
+  
+  // Price slots elements
+  const addSlotBtn = document.getElementById('add-slot-btn');
+  const priceSlotsContainer = document.getElementById('price-slots-list');
+  
+  // Store price slots
+  let priceSlots = [];
 
   function showError(message) {
     errorMessage.textContent = message;
@@ -36,6 +43,92 @@ document.addEventListener('DOMContentLoaded', function () {
     errorMessage.style.display = 'none';
     successMessage.style.display = 'none';
   }
+
+  function formatPrice(price) {
+    return new Intl.NumberFormat('vi-VN').format(price) + 'đ';
+  }
+
+  function formatTime(time) {
+    return time.substring(0, 5); // Format HH:MM
+  }
+
+  function renderPriceSlots() {
+    if (priceSlots.length === 0) {
+      priceSlotsContainer.innerHTML = '<p class="empty-slots">Chưa có khung giờ nào. Thêm khung giờ ở trên.</p>';
+      return;
+    }
+
+    priceSlotsContainer.innerHTML = priceSlots
+      .map((slot, index) => `
+        <div class="price-slot-item" data-index="${index}">
+          <div class="slot-info">
+            <span class="slot-time">${formatTime(slot.start_time)} - ${formatTime(slot.end_time)}</span>
+            <span class="slot-price">${formatPrice(slot.price)}</span>
+          </div>
+          <button type="button" class="btn btn-small btn-danger remove-slot-btn" data-index="${index}">Xóa</button>
+        </div>
+      `)
+      .join('');
+
+    // Add event listeners to remove buttons
+    document.querySelectorAll('.remove-slot-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const index = parseInt(this.dataset.index);
+        priceSlots.splice(index, 1);
+        renderPriceSlots();
+      });
+    });
+  }
+
+  // Add price slot
+  addSlotBtn.addEventListener('click', function() {
+    const startTime = document.getElementById('slot-start').value;
+    const endTime = document.getElementById('slot-end').value;
+    const price = parseInt(document.getElementById('slot-price').value);
+
+    if (!startTime || !endTime || !price) {
+      showError('Vui lòng điền đầy đủ thông tin khung giờ');
+      return;
+    }
+
+    if (startTime >= endTime) {
+      showError('Giờ bắt đầu phải nhỏ hơn giờ kết thúc');
+      return;
+    }
+
+    if (price < 0) {
+      showError('Giá phải lớn hơn hoặc bằng 0');
+      return;
+    }
+
+    // Check for overlapping time slots
+    const hasOverlap = priceSlots.some(slot => {
+      return (startTime < slot.end_time && endTime > slot.start_time);
+    });
+
+    if (hasOverlap) {
+      showError('Khung giờ này bị trùng với khung giờ đã có');
+      return;
+    }
+
+    hideMessages();
+    priceSlots.push({
+      start_time: startTime,
+      end_time: endTime,
+      price: price
+    });
+
+    // Sort by start time
+    priceSlots.sort((a, b) => a.start_time.localeCompare(b.start_time));
+    
+    renderPriceSlots();
+    
+    // Reset inputs
+    document.getElementById('slot-price').value = '';
+  });
+
+  // Initialize empty slots display
+  renderPriceSlots();
 
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
@@ -68,6 +161,7 @@ document.addEventListener('DOMContentLoaded', function () {
           description,
           slot_duration,
           status,
+          price_slots: priceSlots,
         }),
       });
 
@@ -76,6 +170,8 @@ document.addEventListener('DOMContentLoaded', function () {
       if (data.success) {
         showSuccess(data.data.message || 'Thêm sân thành công! Đang chuyển hướng...');
         form.reset();
+        priceSlots = [];
+        renderPriceSlots();
 
         // Redirect to my courts after 1 second
         setTimeout(() => {

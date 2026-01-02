@@ -914,5 +914,191 @@ body {
   }
 }
 
+/* ========== PRICE SLOTS STYLES ========== */
+.price-slots-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #eee;
+}
+
+.section-title {
+  color: #2c3e50;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.section-subtitle {
+  color: #888;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.price-slot-form {
+  background: #f9f9f9;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.price-slot-form .form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.price-slot-form .form-group.third {
+  flex: 1;
+}
+
+.btn-add-slot {
+  width: 100%;
+}
+
+.price-slots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.price-slot-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 0.8rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  transition: all 0.2s;
+}
+
+.price-slot-item:hover {
+  border-color: #3498db;
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.1);
+}
+
+.slot-info {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.slot-time {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 1rem;
+}
+
+.slot-price {
+  color: #27ae60;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.empty-slots {
+  color: #888;
+  text-align: center;
+  padding: 1rem;
+  font-style: italic;
+}
+
+.price-slots-count {
+  background: #e8f4fd;
+  color: #2980b9;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+}
+
+/* Modal Large */
+.modal-content.modal-large {
+  max-width: 700px;
+}
+
+/* Court Detail Styles */
+.court-detail-content {
+  padding: 0.5rem 0;
+}
+
+.detail-section {
+  margin-bottom: 1.5rem;
+}
+
+.detail-section:last-child {
+  margin-bottom: 0;
+}
+
+.detail-section-title {
+  color: #2c3e50;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.detail-grid {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.detail-item {
+  display: flex;
+  gap: 1rem;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #555;
+  min-width: 120px;
+}
+
+.detail-value {
+  color: #333;
+  flex: 1;
+}
+
+.price-slots-detail {
+  background: #f9f9f9;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.error-text {
+  color: #e74c3c;
+  text-align: center;
+  padding: 1rem;
+}
+
+/* Button Info Style */
+.btn-info {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.btn-info:hover {
+  background-color: #138496;
+}
+
+@media (max-width: 768px) {
+  .price-slot-form .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .slot-info {
+    flex-direction: column;
+    gap: 0.3rem;
+    align-items: flex-start;
+  }
+  
+  .detail-item {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  
+  .detail-label {
+    min-width: auto;
+  }
+}
+
 
 

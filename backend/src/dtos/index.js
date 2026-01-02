@@ -37,19 +37,20 @@ class ResetPasswordDTO {
 
 // ============ COURT DTOs ============
 class CreateCourtDTO {
-  constructor({ name, location, description, status, slot_duration }, ownerId) {
+  constructor({ name, location, description, status, slot_duration, price_slots }, ownerId) {
     this.name = name;
     this.location = location;
     this.description = description || null;
     this.status = status;
     this.slot_duration = slot_duration;
     this.ownerId = ownerId;
+    this.price_slots = price_slots || []; // Array of { start_time, end_time, price }
   }
 }
 
 class UpdateCourtDTO {
   // Fields mà user thường được phép update
-  static ALLOWED_FIELDS = ['name', 'location', 'description', 'status', 'slot_duration'];
+  static ALLOWED_FIELDS = ['name', 'location', 'description', 'status', 'slot_duration', 'price_slots'];
   
   // Fields chỉ admin được update
   static ADMIN_ONLY_FIELDS = ['is_deleted', 'deleted_at', 'owner_id'];

@@ -5,7 +5,7 @@ const { ERROR_CODES, MESSAGES, COURT_DEFAULTS } = require('../constants');
 
 class CourtService {
   async createCourt(createCourtDTO) {
-    const { name, location, description, status, slot_duration, ownerId } = createCourtDTO;
+    const { name, location, description, status, slot_duration, ownerId, price_slots } = createCourtDTO;
 
     // Validate required fields
     if (!name || !location) {
@@ -14,36 +14,72 @@ class CourtService {
 
     const courtId = generateId('C', 10);
 
-    // Create court
-    const court = await db.Court.create({
-      id: courtId,
-      name,
-      location,
-      description: description || null,
-      status: status || COURT_DEFAULTS.STATUS,
-      slot_duration: slot_duration || COURT_DEFAULTS.SLOT_DURATION,
-      owner_id: ownerId
-    });
+    const transaction = await db.sequelize.transaction();
 
-    return {
-      id: court.id,
-      name: court.name,
-      location: court.location,
-      description: court.description,
-      status: court.status,
-      slot_duration: court.slot_duration,
-      owner_id: court.owner_id
-    };
+    try {
+      // Create court
+      const court = await db.Court.create({
+        id: courtId,
+        name,
+        location,
+        description: description || null,
+        status: status || COURT_DEFAULTS.STATUS,
+        slot_duration: slot_duration || COURT_DEFAULTS.SLOT_DURATION,
+        owner_id: ownerId
+      }, { transaction });
+
+      // Create price slots if provided
+      let createdPriceSlots = [];
+      if (price_slots && price_slots.length > 0) {
+        const priceSlotsData = price_slots.map(slot => ({
+          id: generateId('PS', 10),
+          start_time: slot.start_time,
+          end_time: slot.end_time,
+          price: slot.price,
+          tblCourtId: courtId
+        }));
+
+        createdPriceSlots = await db.CourtPriceSlot.bulkCreate(priceSlotsData, { transaction });
+      }
+
+      await transaction.commit();
+
+      return {
+        id: court.id,
+        name: court.name,
+        location: court.location,
+        description: court.description,
+        status: court.status,
+        slot_duration: court.slot_duration,
+        owner_id: court.owner_id,
+        price_slots: createdPriceSlots.map(slot => ({
+          id: slot.id,
+          start_time: slot.start_time,
+          end_time: slot.end_time,
+          price: slot.price
+        }))
+      };
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
   async getAllCourts() {
     const courts = await db.Court.findAll({
       where: { is_deleted: false },
-      include: [{
-        model: db.User,
-        as: 'owner',
-        attributes: ['id', 'full_name', 'email', 'phone']
-      }]
+      include: [
+        {
+          model: db.User,
+          as: 'owner',
+          attributes: ['id', 'full_name', 'email', 'phone']
+        },
+        {
+          model: db.CourtPriceSlot,
+          as: 'priceSlots',
+          attributes: ['id', 'start_time', 'end_time', 'price']
+        }
+      ]
     });
 
     return courts;
@@ -52,11 +88,18 @@ class CourtService {
   async getCourtById(id) {
     const court = await db.Court.findOne({
       where: { id, is_deleted: false },
-      include: [{
-        model: db.User,
-        as: 'owner',
-        attributes: ['id', 'full_name', 'email', 'phone']
-      }]
+      include: [
+        {
+          model: db.User,
+          as: 'owner',
+          attributes: ['id', 'full_name', 'email', 'phone']
+        },
+        {
+          model: db.CourtPriceSlot,
+          as: 'priceSlots',
+          attributes: ['id', 'start_time', 'end_time', 'price']
+        }
+      ]
     });
 
     if (!court) {
@@ -68,7 +111,12 @@ class CourtService {
 
   async getMyCourts(ownerId) {
     const courts = await db.Court.findAll({
-      where: { owner_id: ownerId, is_deleted: false }
+      where: { owner_id: ownerId, is_deleted: false },
+      include: [{
+        model: db.CourtPriceSlot,
+        as: 'priceSlots',
+        attributes: ['id', 'start_time', 'end_time', 'price']
+      }]
     });
 
     return courts;
@@ -94,10 +142,56 @@ class CourtService {
       throw AppError.forbidden(ERROR_CODES.PERMISSION_DENIED, MESSAGES.ERROR.PERMISSION_DENIED);
     }
 
-    // Chỉ update các fields có trong changes (đã được filter bởi DTO)
-    await court.update(changes);
+    // Extract price_slots from changes (không update trực tiếp vào court table)
+    const { price_slots, ...courtChanges } = changes;
 
-    return court;
+    const transaction = await db.sequelize.transaction();
+
+    try {
+      // Update court fields (excluding price_slots)
+      if (Object.keys(courtChanges).length > 0) {
+        await court.update(courtChanges, { transaction });
+      }
+
+      // Update price slots if provided
+      if (price_slots !== undefined) {
+        // Delete existing price slots
+        await db.CourtPriceSlot.destroy({
+          where: { tblCourtId: courtId },
+          transaction
+        });
+
+        // Create new price slots
+        if (price_slots && price_slots.length > 0) {
+          const priceSlotsData = price_slots.map(slot => ({
+            id: generateId('PS', 10),
+            start_time: slot.start_time,
+            end_time: slot.end_time,
+            price: slot.price,
+            tblCourtId: courtId
+          }));
+
+          await db.CourtPriceSlot.bulkCreate(priceSlotsData, { transaction });
+        }
+      }
+
+      await transaction.commit();
+
+      // Fetch updated court with price slots
+      const updatedCourt = await db.Court.findOne({
+        where: { id: courtId },
+        include: [{
+          model: db.CourtPriceSlot,
+          as: 'priceSlots',
+          attributes: ['id', 'start_time', 'end_time', 'price']
+        }]
+      });
+
+      return updatedCourt;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
   async deleteCourt(deleteCourtDTO) {

@@ -38,6 +38,26 @@ block content
               option(value="inactive") Tạm ngưng
               option(value="maintenance") Bảo trì
         
+        //- Price Slots Section
+        .price-slots-section
+          h3.section-title Bảng giá theo khung giờ
+          p.section-subtitle Thêm các khung giờ và giá tương ứng
+          
+          .price-slot-form
+            .form-row
+              .form-group.third
+                label(for="slot-start") Giờ bắt đầu
+                input.form-control#slot-start(type="time" value="06:00")
+              .form-group.third
+                label(for="slot-end") Giờ kết thúc
+                input.form-control#slot-end(type="time" value="17:00")
+              .form-group.third
+                label(for="slot-price") Giá (VNĐ)
+                input.form-control#slot-price(type="number" min="0" step="1000" placeholder="100000")
+            button.btn.btn-secondary.btn-add-slot(type="button" id="add-slot-btn") + Thêm khung giờ
+          
+          #price-slots-list.price-slots-list
+        
         button.btn.btn-primary.btn-block(type="submit" id="submit-btn") Thêm Sân
       
       .court-footer

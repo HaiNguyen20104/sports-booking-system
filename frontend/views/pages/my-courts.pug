@@ -12,10 +12,21 @@ block content
     #courts-list.courts-list
       .loading-spinner Đang tải danh sách sân...
 
+  //- Court Detail Modal
+  #court-detail-modal.modal(style="display: none;")
+    .modal-overlay
+    .modal-content.modal-large
+      .modal-header
+        h3.modal-title Chi Tiết Sân
+        button.modal-close(type="button" onclick="closeDetailModal()") ×
+      
+      #court-detail-content.court-detail-content
+        .loading-spinner Đang tải thông tin sân...
+
   //- Edit Court Modal
   #edit-court-modal.modal(style="display: none;")
     .modal-overlay
-    .modal-content
+    .modal-content.modal-large
       .modal-header
         h3.modal-title Chỉnh Sửa Sân
         button.modal-close(type="button" onclick="closeEditModal()") ×
@@ -52,6 +63,25 @@ block content
               option(value="active") Hoạt động
               option(value="inactive") Tạm ngưng
               option(value="maintenance") Bảo trì
+        
+        //- Price Slots Section for Edit
+        .price-slots-section
+          h3.section-title Bảng giá theo khung giờ
+          
+          .price-slot-form
+            .form-row
+              .form-group.third
+                label(for="edit-slot-start") Giờ bắt đầu
+                input.form-control#edit-slot-start(type="time" value="06:00")
+              .form-group.third
+                label(for="edit-slot-end") Giờ kết thúc
+                input.form-control#edit-slot-end(type="time" value="17:00")
+              .form-group.third
+                label(for="edit-slot-price") Giá (VNĐ)
+                input.form-control#edit-slot-price(type="number" min="0" step="1000" placeholder="100000")
+            button.btn.btn-secondary.btn-add-slot(type="button" id="edit-add-slot-btn") + Thêm khung giờ
+          
+          #edit-price-slots-list.price-slots-list
         
         .modal-actions
           button.btn.btn-secondary(type="button" onclick="closeEditModal()") Hủy
