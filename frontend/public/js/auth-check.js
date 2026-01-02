@@ -5,11 +5,19 @@
   
   const authLinks = document.querySelectorAll('.auth-links');
   const userMenuItems = document.querySelectorAll('.user-menu');
+  const managerMenuItems = document.querySelectorAll('.manager-menu');
   
   if (accessToken && user.id) {
     // User is logged in - show user menu, hide auth links
     authLinks.forEach(link => link.style.display = 'none');
     userMenuItems.forEach(item => item.style.display = 'block');
+    
+    // Show manager menu only for manager/admin
+    if (user.role === 'manager' || user.role === 'admin') {
+      managerMenuItems.forEach(item => item.style.display = 'block');
+    } else {
+      managerMenuItems.forEach(item => item.style.display = 'none');
+    }
     
     // Update profile link text with user name
     const profileLink = document.querySelector('.user-menu a[href="/profile"] span');
@@ -20,6 +28,7 @@
     // User is not logged in - show auth links, hide user menu
     authLinks.forEach(link => link.style.display = 'block');
     userMenuItems.forEach(item => item.style.display = 'none');
+    managerMenuItems.forEach(item => item.style.display = 'none');
   }
   
   // Logout handler

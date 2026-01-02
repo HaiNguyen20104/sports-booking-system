@@ -3,15 +3,17 @@ const jwt = require('jsonwebtoken');
 const db = require('../models');
 const { generateId } = require('../utils/generateId');
 const config = require('../config');
+const AppError = require('../utils/AppError');
+const { ERROR_CODES, MESSAGES, ROLES } = require('../constants');
 
 class AuthService {
-  async prepareRegistration(userData) {
-    const { full_name, email, phone, password, role } = userData;
+  async prepareRegistration(registerDTO) {
+    const { full_name, email, phone, password, role } = registerDTO;
 
     // Check if email already exists
     const existingUser = await db.User.findOne({ where: { email } });
     if (existingUser) {
-      throw new Error('Email already registered');
+      throw AppError.badRequest(ERROR_CODES.EMAIL_ALREADY_EXISTS, MESSAGES.ERROR.EMAIL_ALREADY_EXISTS);
     }
 
     // Hash password
@@ -27,7 +29,7 @@ class AuthService {
       email,
       phone: phone || null,
       password: hashedPassword,
-      role: role || 'customer',
+      role: role || ROLES.CUSTOMER,
       is_verified: false
     };
 
@@ -58,22 +60,24 @@ class AuthService {
     };
   }
 
-  async login(email, password) {
+  async login(loginDTO) {
+    const { email, password } = loginDTO;
+
     // Find user by email
     const user = await db.User.findOne({ where: { email } });
     if (!user) {
-      throw new Error('Invalid email or password');
+      throw AppError.unauthorized(ERROR_CODES.INVALID_CREDENTIALS, MESSAGES.ERROR.INVALID_CREDENTIALS);
     }
 
     // Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new Error('Invalid email or password');
+      throw AppError.unauthorized(ERROR_CODES.INVALID_CREDENTIALS, MESSAGES.ERROR.INVALID_CREDENTIALS);
     }
 
     // Check if user is verified
     if (!user.is_verified) {
-      throw new Error('Please verify your email before logging in');
+      throw AppError.forbidden(ERROR_CODES.EMAIL_NOT_VERIFIED, MESSAGES.ERROR.EMAIL_NOT_VERIFIED);
     }
 
     // Generate access token
@@ -99,17 +103,19 @@ class AuthService {
     };
   }
 
-  async verifyEmail(token) {
+  async verifyEmail(verifyEmailDTO) {
+    const { token } = verifyEmailDTO;
+
     try {
       const decoded = jwt.verify(token, config.jwtSecret);
       
       const user = await db.User.findByPk(decoded.userId);
       if (!user) {
-        throw new Error('User not found');
+        throw AppError.notFound(ERROR_CODES.USER_NOT_FOUND, MESSAGES.ERROR.USER_NOT_FOUND);
       }
 
       if (user.is_verified) {
-        throw new Error('Email already verified');
+        throw AppError.badRequest(ERROR_CODES.EMAIL_ALREADY_VERIFIED, MESSAGES.ERROR.EMAIL_ALREADY_VERIFIED);
       }
 
       // Update user verification status
@@ -119,16 +125,18 @@ class AuthService {
       return user;
     } catch (error) {
       if (error.name === 'TokenExpiredError') {
-        throw new Error('Verification link has expired');
+        throw AppError.badRequest(ERROR_CODES.TOKEN_EXPIRED, MESSAGES.ERROR.VERIFICATION_EXPIRED);
       }
       throw error;
     }
   }
 
-  async forgotPassword(email) {
+  async forgotPassword(forgotPasswordDTO) {
+    const { email } = forgotPasswordDTO;
+
     const user = await db.User.findOne({ where: { email } });
     if (!user) {
-      throw new Error('No user found with this email');
+      throw AppError.notFound(ERROR_CODES.USER_NOT_FOUND, MESSAGES.ERROR.USER_NOT_FOUND);
     }
 
     // Generate reset token
@@ -162,32 +170,34 @@ class AuthService {
     }
   }
 
-  async resetPassword(token, newPassword) {
+  async resetPassword(resetPasswordDTO) {
+    const { token, password } = resetPasswordDTO;
+
     try {
       // Verify token
       const decoded = jwt.verify(token, config.jwtSecret);
       
       if (decoded.purpose !== 'reset-password') {
-        throw new Error('Invalid token purpose');
+        throw AppError.badRequest(ERROR_CODES.INVALID_RESET_TOKEN, MESSAGES.ERROR.INVALID_RESET_TOKEN);
       }
 
       // Find user by ID and check token
       const user = await db.User.findByPk(decoded.userId);
       if (!user) {
-        throw new Error('User not found');
+        throw AppError.notFound(ERROR_CODES.USER_NOT_FOUND, MESSAGES.ERROR.USER_NOT_FOUND);
       }
 
       // Check if token matches and hasn't expired
       if (user.reset_password_token !== token) {
-        throw new Error('Invalid or expired reset token');
+        throw AppError.badRequest(ERROR_CODES.INVALID_RESET_TOKEN, MESSAGES.ERROR.INVALID_RESET_TOKEN);
       }
 
       if (user.reset_password_expires && new Date() > new Date(user.reset_password_expires)) {
-        throw new Error('Reset token has expired');
+        throw AppError.badRequest(ERROR_CODES.RESET_TOKEN_EXPIRED, MESSAGES.ERROR.RESET_TOKEN_EXPIRED);
       }
 
       // Hash new password
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      const hashedPassword = await bcrypt.hash(password, 10);
 
       // Update password and clear reset token
       user.password = hashedPassword;
@@ -202,10 +212,10 @@ class AuthService {
       };
     } catch (error) {
       if (error.name === 'TokenExpiredError') {
-        throw new Error('Reset token has expired');
+        throw AppError.badRequest(ERROR_CODES.RESET_TOKEN_EXPIRED, MESSAGES.ERROR.RESET_TOKEN_EXPIRED);
       }
       if (error.name === 'JsonWebTokenError') {
-        throw new Error('Invalid reset token');
+        throw AppError.badRequest(ERROR_CODES.INVALID_RESET_TOKEN, MESSAGES.ERROR.INVALID_RESET_TOKEN);
       }
       throw error;
     }

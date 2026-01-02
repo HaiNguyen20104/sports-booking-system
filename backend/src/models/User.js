@@ -1,4 +1,5 @@
 const { DataTypes } = require('sequelize');
+const { ROLES, ALL_ROLES } = require('../constants');
 
 module.exports = (sequelize) => {
   const User = sequelize.define('User', {
@@ -26,9 +27,9 @@ module.exports = (sequelize) => {
     role: {
       type: DataTypes.STRING(255),
       allowNull: false,
-      defaultValue: 'customer',
+      defaultValue: ROLES.CUSTOMER,
       validate: {
-        isIn: [['customer', 'admin', 'manager']]
+        isIn: [ALL_ROLES]
       }
     },
     password: {

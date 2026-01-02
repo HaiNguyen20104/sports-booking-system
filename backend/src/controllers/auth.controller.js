@@ -1,25 +1,20 @@
 const authService = require('../services/auth.service');
 const emailService = require('../services/email.service');
 const ApiResponse = require('../utils/apiResponse');
+const { ERROR_CODES, MESSAGES } = require('../constants');
+const { RegisterDTO, LoginDTO, VerifyEmailDTO, ForgotPasswordDTO, ResetPasswordDTO } = require('../dtos');
 
 class AuthController {
   async register(req, res) {
     try {
-      const { full_name, email, phone, password, role } = req.body;
-
-      const result = await authService.prepareRegistration({
-        full_name,
-        email,
-        phone,
-        password,
-        role
-      });
+      const registerDTO = new RegisterDTO(req.body);
+      const result = await authService.prepareRegistration(registerDTO);
 
       // Send verification email
       try {
         await emailService.sendVerificationEmail(
-          email,
-          full_name,
+          registerDTO.email,
+          registerDTO.full_name,
           result.verificationToken
         );
       } catch (emailError) {
@@ -27,7 +22,7 @@ class AuthController {
         // If email fails, don't create user - return error
         return ApiResponse.error(
           res,
-          'Không thể gửi email xác thực. Vui lòng thử lại sau.',
+          MESSAGES.ERROR.EMAIL_VERIFICATION_SEND_FAILED,
           500
         );
       }
@@ -39,48 +34,46 @@ class AuthController {
         res,
         {
           user: user,
-          message: 'Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.'
+          message: MESSAGES.SUCCESS.REGISTER
         },
         'User registered successfully',
         201
       );
     } catch (error) {
-      if (error.message === 'Email already registered') {
-        return ApiResponse.badRequest(res, error.message);
+      if (error.code === ERROR_CODES.EMAIL_ALREADY_EXISTS) {
+        return ApiResponse.badRequest(res, MESSAGES.ERROR.EMAIL_ALREADY_EXISTS);
       }
       console.error('Register error:', error);
-      return ApiResponse.error(res, 'Registration failed');
+      return ApiResponse.error(res, MESSAGES.ERROR.REGISTER_FAILED);
     }
   }
 
   async login(req, res) {
     try {
-      const { email, password } = req.body;
-
-      const result = await authService.login(email, password);
+      const loginDTO = new LoginDTO(req.body);
+      const result = await authService.login(loginDTO);
 
       return ApiResponse.success(
         res,
         result,
-        'Login successful'
+        MESSAGES.SUCCESS.LOGIN
       );
     } catch (error) {
-      if (error.message === 'Invalid email or password') {
-        return ApiResponse.unauthorized(res, error.message);
+      if (error.code === ERROR_CODES.INVALID_CREDENTIALS) {
+        return ApiResponse.unauthorized(res, MESSAGES.ERROR.INVALID_CREDENTIALS);
       }
-      if (error.message === 'Please verify your email before logging in') {
-        return ApiResponse.forbidden(res, error.message);
+      if (error.code === ERROR_CODES.EMAIL_NOT_VERIFIED) {
+        return ApiResponse.forbidden(res, MESSAGES.ERROR.EMAIL_NOT_VERIFIED);
       }
       console.error('Login error:', error);
-      return ApiResponse.error(res, 'Login failed');
+      return ApiResponse.error(res, MESSAGES.ERROR.LOGIN_FAILED);
     }
   }
 
   async verifyEmail(req, res) {
     try {
-      const { token } = req.body;
-
-      const user = await authService.verifyEmail(token);
+      const verifyEmailDTO = new VerifyEmailDTO(req.body);
+      const user = await authService.verifyEmail(verifyEmailDTO);
 
       return ApiResponse.success(
         res,
@@ -89,38 +82,37 @@ class AuthController {
           email: user.email,
           is_verified: user.is_verified
         },
-        'Email verified successfully'
+        MESSAGES.SUCCESS.EMAIL_VERIFIED
       );
     } catch (error) {
-      if (error.message === 'User not found') {
-        return ApiResponse.notFound(res, error.message);
+      if (error.code === ERROR_CODES.USER_NOT_FOUND) {
+        return ApiResponse.notFound(res, MESSAGES.ERROR.USER_NOT_FOUND);
       }
-      if (error.message === 'Email already verified') {
-        return ApiResponse.badRequest(res, error.message);
+      if (error.code === ERROR_CODES.EMAIL_ALREADY_VERIFIED) {
+        return ApiResponse.badRequest(res, MESSAGES.ERROR.EMAIL_ALREADY_VERIFIED);
       }
-      if (error.message === 'Verification link has expired') {
-        return ApiResponse.badRequest(res, error.message);
+      if (error.code === ERROR_CODES.TOKEN_EXPIRED) {
+        return ApiResponse.badRequest(res, MESSAGES.ERROR.VERIFICATION_EXPIRED);
       }
       console.error('Verify email error:', error);
-      return ApiResponse.error(res, 'Email verification failed');
+      return ApiResponse.error(res, MESSAGES.ERROR.VERIFICATION_FAILED);
     }
   }
 
   async getProfile(req, res) {
     try {
       // req.user is set by auth middleware
-      return ApiResponse.success(res, req.user, 'Profile retrieved successfully');
+      return ApiResponse.success(res, req.user, MESSAGES.SUCCESS.PROFILE_FETCHED);
     } catch (error) {
       console.error('Get profile error:', error);
-      return ApiResponse.error(res, 'Failed to get profile');
+      return ApiResponse.error(res, MESSAGES.ERROR.PROFILE_FAILED);
     }
   }
 
   async forgotPassword(req, res) {
     try {
-      const { email } = req.body;
-
-      const result = await authService.forgotPassword(email);
+      const forgotPasswordDTO = new ForgotPasswordDTO(req.body);
+      const result = await authService.forgotPassword(forgotPasswordDTO);
 
       // Send password reset email
       try {
@@ -133,7 +125,7 @@ class AuthController {
         return ApiResponse.success(
           res,
           {
-            message: 'Email đặt lại mật khẩu đã được gửi! Vui lòng kiểm tra hộp thư của bạn.'
+            message: MESSAGES.SUCCESS.PASSWORD_RESET_EMAIL_SENT
           },
           'Password reset email sent successfully'
         );
@@ -143,24 +135,23 @@ class AuthController {
         await authService.clearResetToken(result.email);
         return ApiResponse.error(
           res,
-          'Không thể gửi email đặt lại mật khẩu. Vui lòng thử lại sau.',
+          MESSAGES.ERROR.EMAIL_RESET_SEND_FAILED,
           500
         );
       }
     } catch (error) {
-      if (error.message === 'No user found with this email') {
-        return ApiResponse.notFound(res, error.message);
+      if (error.code === ERROR_CODES.USER_NOT_FOUND) {
+        return ApiResponse.notFound(res, MESSAGES.ERROR.USER_NOT_FOUND);
       }
       console.error('Forgot password error:', error);
-      return ApiResponse.error(res, 'Failed to process forgot password request');
+      return ApiResponse.error(res, MESSAGES.ERROR.FORGOT_PASSWORD_FAILED);
     }
   }
 
   async resetPassword(req, res) {
     try {
-      const { token, password } = req.body;
-
-      const user = await authService.resetPassword(token, password);
+      const resetPasswordDTO = new ResetPasswordDTO(req.body);
+      const user = await authService.resetPassword(resetPasswordDTO);
 
       return ApiResponse.success(
         res,
@@ -168,24 +159,19 @@ class AuthController {
           id: user.id,
           email: user.email,
           full_name: user.full_name,
-          message: 'Mật khẩu đã được đặt lại thành công! Bạn có thể đăng nhập với mật khẩu mới.'
+          message: MESSAGES.SUCCESS.PASSWORD_RESET
         },
         'Password reset successfully'
       );
     } catch (error) {
-      if (error.message === 'User not found') {
-        return ApiResponse.notFound(res, error.message);
+      if (error.code === ERROR_CODES.USER_NOT_FOUND) {
+        return ApiResponse.notFound(res, MESSAGES.ERROR.USER_NOT_FOUND);
       }
-      if (
-        error.message === 'Invalid or expired reset token' ||
-        error.message === 'Reset token has expired' ||
-        error.message === 'Invalid reset token' ||
-        error.message === 'Invalid token purpose'
-      ) {
+      if (error.code === ERROR_CODES.INVALID_RESET_TOKEN || error.code === ERROR_CODES.RESET_TOKEN_EXPIRED) {
         return ApiResponse.badRequest(res, error.message);
       }
       console.error('Reset password error:', error);
-      return ApiResponse.error(res, 'Failed to reset password');
+      return ApiResponse.error(res, MESSAGES.ERROR.RESET_PASSWORD_FAILED);
     }
   }
 }

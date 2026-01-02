@@ -7,9 +7,9 @@ const crypto = require('crypto');
  * @returns {string} Generated ID
  */
 const generateId = (prefix = '', length = 10) => {
-  const timestamp = Date.now().toString(36);
-  const randomStr = crypto.randomBytes(4).toString('hex');
-  const combined = (prefix + timestamp + randomStr).substring(0, length);
+  // Use more random bytes to ensure uniqueness even when called rapidly
+  const randomStr = crypto.randomBytes(8).toString('hex');
+  const combined = (prefix + randomStr).substring(0, length);
   return combined.toUpperCase();
 };
 
