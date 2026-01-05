@@ -1,5 +1,7 @@
 const nodemailer = require('nodemailer');
 const config = require('../config');
+const AppError = require('../utils/AppError');
+const { ERROR_CODES, MESSAGES } = require('../constants');
 
 class EmailService {
   constructor() {
@@ -75,7 +77,7 @@ class EmailService {
       return { success: true, messageId: info.messageId };
     } catch (error) {
       console.error('Error sending email:', error);
-      throw new Error('Failed to send verification email');
+      throw new AppError(ERROR_CODES.EMAIL_SEND_FAILED, MESSAGES.ERROR.EMAIL_VERIFICATION_SEND_FAILED, 500);
     }
   }
 
@@ -148,7 +150,7 @@ class EmailService {
       return { success: true, messageId: info.messageId };
     } catch (error) {
       console.error('Error sending password reset email:', error);
-      throw new Error('Failed to send password reset email');
+      throw new AppError(ERROR_CODES.EMAIL_SEND_FAILED, MESSAGES.ERROR.EMAIL_RESET_SEND_FAILED, 500);
     }
   }
 }

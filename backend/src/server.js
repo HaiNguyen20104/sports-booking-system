@@ -76,6 +76,19 @@ app.get('/reset-password', (req, res) => {
   });
 });
 
+// Court management pages (for managers)
+app.get('/my-courts', (req, res) => {
+  res.render('pages/my-courts', {
+    title: 'Sân Của Tôi'
+  });
+});
+
+app.get('/add-court', (req, res) => {
+  res.render('pages/add-court', {
+    title: 'Thêm Sân Mới'
+  });
+});
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ 

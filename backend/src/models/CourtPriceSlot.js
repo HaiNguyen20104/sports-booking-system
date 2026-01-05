@@ -22,6 +22,7 @@ module.exports = (sequelize) => {
     tblCourtId: {
       type: DataTypes.STRING(11),
       allowNull: false,
+      field: 'tblCourtId',
       references: {
         model: 'tblCourts',
         key: 'id'
@@ -29,7 +30,8 @@ module.exports = (sequelize) => {
     }
   }, {
     tableName: 'tblCourtPriceSlots',
-    timestamps: false
+    timestamps: false,
+    underscored: false
   });
 
   return CourtPriceSlot;

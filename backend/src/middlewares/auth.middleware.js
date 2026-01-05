@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const db = require('../models');
+const { MESSAGES } = require('../constants');
 
 const authMiddleware = async (req, res, next) => {
   try {
@@ -9,7 +10,7 @@ const authMiddleware = async (req, res, next) => {
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: 'Access token is required'
+        message: MESSAGES.ERROR.TOKEN_REQUIRED
       });
     }
 
@@ -20,7 +21,7 @@ const authMiddleware = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'User not found'
+        message: MESSAGES.ERROR.USER_NOT_FOUND
       });
     }
 
@@ -36,13 +37,13 @@ const authMiddleware = async (req, res, next) => {
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({
         success: false,
-        message: 'Token has expired'
+        message: MESSAGES.ERROR.TOKEN_EXPIRED
       });
     }
     
     return res.status(401).json({
       success: false,
-      message: 'Invalid token'
+      message: MESSAGES.ERROR.TOKEN_INVALID
     });
   }
 };
