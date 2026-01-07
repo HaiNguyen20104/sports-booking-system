@@ -61,12 +61,25 @@ module.exports = (sequelize) => {
         model: 'tblCourts',
         key: 'id'
       }
+    },
+    parent_booking_id: {
+      type: DataTypes.STRING(11),
+      allowNull: true,
+      field: 'parent_booking_id',
+      references: {
+        model: 'tblBooking',
+        key: 'id'
+      }
     }
   }, {
     tableName: 'tblBooking',
     timestamps: false,
     underscored: false
   });
+
+  // Self-referencing relationship
+  Booking.hasMany(Booking, { foreignKey: 'parent_booking_id', as: 'childBookings' });
+  Booking.belongsTo(Booking, { foreignKey: 'parent_booking_id', as: 'parentBooking' });
 
   return Booking;
 };

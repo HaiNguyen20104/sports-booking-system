@@ -28,8 +28,23 @@ function findPriceForTime(priceSlots, startDatetime) {
   return 0;
 }
 
+// Generate recurring dates (weekly)
+function generateRecurringDates(startDatetime, repeatCount) {
+  const dates = [];
+  const baseDate = new Date(startDatetime);
+
+  for (let i = 0; i < repeatCount; i++) {
+    const newDate = new Date(baseDate);
+    newDate.setDate(newDate.getDate() + (i * 7)); // Add weeks
+    dates.push(newDate);
+  }
+
+  return dates;
+}
+
 module.exports = {
   extractTime,
   calculateEndDatetime,
-  findPriceForTime
+  findPriceForTime,
+  generateRecurringDates
 };
