@@ -47,6 +47,7 @@ module.exports = (sequelize) => {
     tblUserId: {
       type: DataTypes.STRING(10),
       allowNull: false,
+      field: 'tblUserId',
       references: {
         model: 'tblUser',
         key: 'id'
@@ -55,6 +56,7 @@ module.exports = (sequelize) => {
     tblCourtId: {
       type: DataTypes.STRING(11),
       allowNull: false,
+      field: 'tblCourtId',
       references: {
         model: 'tblCourts',
         key: 'id'
@@ -62,7 +64,8 @@ module.exports = (sequelize) => {
     }
   }, {
     tableName: 'tblBooking',
-    timestamps: false
+    timestamps: false,
+    underscored: false
   });
 
   return Booking;
