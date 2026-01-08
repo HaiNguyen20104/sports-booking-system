@@ -302,6 +302,65 @@ class BookingService {
       created_at: booking.created_at
     }));
   }
+
+  async getBookingById(getBookingDTO) {
+    const { booking_id, user_id, user_role } = getBookingDTO;
+
+    const booking = await db.Booking.findOne({
+      where: {
+        id: booking_id,
+        parent_booking_id: null
+      },
+      include: [{
+        model: db.Court,
+        as: 'court',
+        attributes: ['id', 'name', 'location', 'owner_id']
+      }, {
+        model: db.User,
+        as: 'user',
+        attributes: ['id', 'full_name', 'phone', 'email']
+      }, {
+        model: db.Booking,
+        as: 'childBookings',
+        attributes: ['id', 'start_datetime', 'end_datetime', 'total_price', 'status']
+      }]
+    });
+
+    if (!booking) {
+      const error = new Error('Booking not found');
+      error.code = ERROR_CODES.BOOKING_NOT_FOUND;
+      throw error;
+    }
+
+    // Check permission
+    const isCustomer = booking.user_id === user_id;
+    const isCourtOwner = booking.court.owner_id === user_id;
+    const isAdmin = user_role === 'admin';
+
+    if (!isCustomer && !isCourtOwner && !isAdmin) {
+      const error = new Error('Permission denied');
+      error.code = ERROR_CODES.PERMISSION_DENIED;
+      throw error;
+    }
+
+    return {
+      id: booking.id,
+      court: {
+        id: booking.court.id,
+        name: booking.court.name,
+        location: booking.court.location
+      },
+      user: booking.user,
+      start_datetime: booking.start_datetime,
+      end_datetime: booking.end_datetime,
+      total_price: booking.total_price,
+      status: booking.status,
+      booking_type: booking.booking_type,
+      note: booking.note,
+      child_bookings: booking.childBookings,
+      created_at: booking.created_at
+    };
+  }
 }
 
 module.exports = new BookingService();
