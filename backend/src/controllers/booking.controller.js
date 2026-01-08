@@ -39,6 +39,17 @@ class BookingController {
       return ApiResponse.error(res, MESSAGES.ERROR.BOOKING_LIST_FAILED);
     }
   }
+
+  async getCourtBookings(req, res) {
+    try {
+      const bookings = await bookingService.getCourtBookings(req.user.id);
+
+      return ApiResponse.success(res, bookings, MESSAGES.SUCCESS.BOOKING_LIST_FETCHED);
+    } catch (error) {
+      console.error('Get court bookings error:', error);
+      return ApiResponse.error(res, MESSAGES.ERROR.BOOKING_LIST_FAILED);
+    }
+  }
 }
 
 module.exports = new BookingController();

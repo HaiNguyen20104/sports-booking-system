@@ -239,6 +239,38 @@ class BookingService {
       created_at: booking.created_at
     }));
   }
+
+  async getCourtBookings(ownerId) {
+    const bookings = await db.Booking.findAll({
+      where: {
+        parent_booking_id: null
+      },
+      include: [{
+        model: db.Court,
+        as: 'court',
+        where: { owner_id: ownerId },
+        attributes: ['id', 'name', 'location']
+      }, {
+        model: db.User,
+        as: 'user',
+        attributes: ['id', 'full_name', 'phone']
+      }],
+      order: [['created_at', 'DESC']]
+    });
+
+    return bookings.map(booking => ({
+      id: booking.id,
+      court: booking.court,
+      user: booking.user,
+      start_datetime: booking.start_datetime,
+      end_datetime: booking.end_datetime,
+      total_price: booking.total_price,
+      status: booking.status,
+      booking_type: booking.booking_type,
+      note: booking.note,
+      created_at: booking.created_at
+    }));
+  }
 }
 
 module.exports = new BookingService();
