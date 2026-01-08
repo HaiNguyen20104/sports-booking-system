@@ -21,9 +21,7 @@ router.put('/:id', authMiddleware, (req, res) => {
   res.json({ message: 'Update booking' });
 });
 
-router.delete('/:id', authMiddleware, (req, res) => {
-  res.json({ message: 'Cancel booking' });
-});
+router.delete('/:id', authMiddleware, bookingController.cancelBooking);
 
 router.get('/:id/payment', authMiddleware, (req, res) => {
   res.json({ message: 'Get payment' });

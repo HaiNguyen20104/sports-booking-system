@@ -1,7 +1,7 @@
 const bookingService = require('../services/booking.service');
 const ApiResponse = require('../utils/apiResponse');
 const { ERROR_CODES, MESSAGES } = require('../constants');
-const { CreateBookingDTO, GetBookingDTO } = require('../dtos/booking.dto');
+const { CreateBookingDTO, GetBookingDTO, CancelBookingDTO } = require('../dtos/booking.dto');
 
 class BookingController {
   async createBooking(req, res) {
@@ -83,6 +83,30 @@ class BookingController {
       }
 
       return ApiResponse.error(res, MESSAGES.ERROR.BOOKING_DETAIL_FAILED);
+    }
+  }
+
+  async cancelBooking(req, res) {
+    try {
+      const cancelBookingDTO = new CancelBookingDTO(
+        req.params.id,
+        req.user.id,
+        req.user.role
+      );
+      const result = await bookingService.cancelBooking(cancelBookingDTO);
+
+      return ApiResponse.success(res, result, MESSAGES.SUCCESS.BOOKING_CANCELLED);
+    } catch (error) {
+      console.error('Cancel booking error:', error);
+
+      if (error.code === ERROR_CODES.BOOKING_NOT_FOUND) {
+        return ApiResponse.notFound(res, MESSAGES.ERROR.BOOKING_NOT_FOUND);
+      }
+      if (error.code === ERROR_CODES.PERMISSION_DENIED) {
+        return ApiResponse.forbidden(res, MESSAGES.ERROR.PERMISSION_DENIED);
+      }
+
+      return ApiResponse.error(res, MESSAGES.ERROR.BOOKING_CANCEL_FAILED);
     }
   }
 }

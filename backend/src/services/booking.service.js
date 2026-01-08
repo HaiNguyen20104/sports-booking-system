@@ -4,6 +4,7 @@ const AppError = require('../utils/AppError');
 const { ERROR_CODES, MESSAGES } = require('../constants');
 const { Op } = require('sequelize');
 const { calculateEndDatetime, findPriceForTime, generateRecurringDates } = require('../helpers/booking.helper');
+const { ROLES } = require('../constants');
 
 class BookingService {
   async createBooking(createBookingDTO) {
@@ -169,6 +170,7 @@ class BookingService {
         attributes: []
       }],
       where: {
+        is_deleted: false,
         status: { [Op.in]: ['pending', 'confirmed'] },
         start_datetime: { [Op.lt]: endDatetime },
         end_datetime: { [Op.gt]: startDatetime }
@@ -201,6 +203,7 @@ class BookingService {
         attributes: []
       }],
       where: {
+        is_deleted: false,
         status: { [Op.in]: ['pending', 'confirmed'] },
         [Op.or]: timeConditions
       },
@@ -217,7 +220,8 @@ class BookingService {
     const bookings = await db.Booking.findAll({
       where: {
         tblUserId: userId,
-        parent_booking_id: null
+        parent_booking_id: null,
+        is_deleted: false
       },
       include: [{
         model: db.Court,
@@ -243,7 +247,8 @@ class BookingService {
   async getCourtBookings(ownerId) {
     const bookings = await db.Booking.findAll({
       where: {
-        parent_booking_id: null
+        parent_booking_id: null,
+        is_deleted: false
       },
       include: [{
         model: db.Court,
@@ -275,7 +280,8 @@ class BookingService {
   async getAllBookings() {
     const bookings = await db.Booking.findAll({
       where: {
-        parent_booking_id: null
+        parent_booking_id: null,
+        is_deleted: false
       },
       include: [{
         model: db.Court,
@@ -309,7 +315,8 @@ class BookingService {
     const booking = await db.Booking.findOne({
       where: {
         id: booking_id,
-        parent_booking_id: null
+        parent_booking_id: null,
+        is_deleted: false
       },
       include: [{
         model: db.Court,
@@ -335,7 +342,7 @@ class BookingService {
     // Check permission
     const isCustomer = booking.user_id === user_id;
     const isCourtOwner = booking.court.owner_id === user_id;
-    const isAdmin = user_role === 'admin';
+    const isAdmin = user_role === ROLES.ADMIN;
 
     if (!isCustomer && !isCourtOwner && !isAdmin) {
       const error = new Error('Permission denied');
@@ -360,6 +367,55 @@ class BookingService {
       child_bookings: booking.childBookings,
       created_at: booking.created_at
     };
+  }
+
+  async cancelBooking(cancelBookingDTO) {
+    const { booking_id, user_id, user_role } = cancelBookingDTO;
+
+    const booking = await db.Booking.findOne({
+      where: {
+        id: booking_id,
+        parent_booking_id: null,
+        is_deleted: false
+      },
+      include: [{
+        model: db.Court,
+        as: 'court',
+        attributes: ['id', 'owner_id']
+      }]
+    });
+
+    if (!booking) {
+      const error = new Error('Booking not found');
+      error.code = ERROR_CODES.BOOKING_NOT_FOUND;
+      throw error;
+    }
+
+    // Check permission
+    const isCustomer = booking.user_id === user_id;
+    const isCourtOwner = booking.court.owner_id === user_id;
+    const isAdmin = user_role === ROLES.ADMIN;
+
+    if (!isCustomer && !isCourtOwner && !isAdmin) {
+      const error = new Error('Permission denied');
+      error.code = ERROR_CODES.PERMISSION_DENIED;
+      throw error;
+    }
+
+    // Soft delete parent and all child bookings
+    await db.Booking.update(
+      { is_deleted: true },
+      {
+        where: {
+          [db.Sequelize.Op.or]: [
+            { id: booking_id },
+            { parent_booking_id: booking_id }
+          ]
+        }
+      }
+    );
+
+    return { id: booking_id };
   }
 }
 
