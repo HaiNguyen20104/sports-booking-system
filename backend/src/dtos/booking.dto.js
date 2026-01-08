@@ -17,7 +17,16 @@ class GetBookingDTO {
   }
 }
 
+class CancelBookingDTO {
+  constructor(bookingId, userId, userRole) {
+    this.booking_id = bookingId;
+    this.user_id = userId;
+    this.user_role = userRole;
+  }
+}
+
 module.exports = {
   CreateBookingDTO,
-  GetBookingDTO
+  GetBookingDTO,
+  CancelBookingDTO
 };
