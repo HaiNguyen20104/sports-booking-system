@@ -24,6 +24,10 @@ class AppError extends Error {
   static forbidden(code, message) {
     return new AppError(code, message, 403);
   }
+
+  static conflict(code, message) {
+    return new AppError(code, message, 409);
+  }
 }
 
 module.exports = AppError;
