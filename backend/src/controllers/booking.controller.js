@@ -50,6 +50,17 @@ class BookingController {
       return ApiResponse.error(res, MESSAGES.ERROR.BOOKING_LIST_FAILED);
     }
   }
+
+  async getAllBookings(req, res) {
+    try {
+      const bookings = await bookingService.getAllBookings();
+
+      return ApiResponse.success(res, bookings, MESSAGES.SUCCESS.BOOKING_LIST_FETCHED);
+    } catch (error) {
+      console.error('Get all bookings error:', error);
+      return ApiResponse.error(res, MESSAGES.ERROR.BOOKING_LIST_FAILED);
+    }
+  }
 }
 
 module.exports = new BookingController();

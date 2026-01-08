@@ -5,11 +5,13 @@ const checkRole = require('../middlewares/checkRole.middleware');
 const validate = require('../middlewares/validate.middleware');
 const { createBookingValidation } = require('../validators/booking.validator');
 const bookingController = require('../controllers/booking.controller');
-const { COURT_MANAGER_ROLES } = require('../constants');
+const { COURT_MANAGER_ROLES, ROLES } = require('../constants');
 
 router.get('/', authMiddleware, bookingController.getMyBookings);
 
 router.get('/court-bookings', authMiddleware, checkRole(...COURT_MANAGER_ROLES), bookingController.getCourtBookings);
+
+router.get('/all', authMiddleware, checkRole(ROLES.ADMIN), bookingController.getAllBookings);
 
 router.get('/:id', authMiddleware, (req, res) => {
   res.json({ message: 'Get booking detail' });
