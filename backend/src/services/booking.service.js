@@ -50,25 +50,27 @@ class BookingService {
 
   async _createRecurringBooking(court, priceSlots, start_datetime, repeat_count, note, user_id) {
     const recurringDates = generateRecurringDates(start_datetime, repeat_count);
+    const pricePerSlot = findPriceForTime(priceSlots, start_datetime);
 
-    // Check ALL dates for conflicts first
-    for (const date of recurringDates) {
-      const end_datetime = calculateEndDatetime(date, court.slot_duration);
-      await this._checkBookingConflict(court.id, date, end_datetime);
-    }
+    // Build time ranges for all recurring dates
+    const timeRanges = recurringDates.map(date => ({
+      start: date,
+      end: calculateEndDatetime(date, court.slot_duration)
+    }));
+
+    // Check ALL dates for conflicts in one query
+    await this._checkMultipleBookingConflicts(court.id, timeRanges);
 
     const transaction = await db.sequelize.transaction();
 
     try {
       // Create parent booking (recurring)
       const parentId = generateId('BK', 10);
-      const firstEndDatetime = calculateEndDatetime(recurringDates[0], court.slot_duration);
-      const pricePerSlot = findPriceForTime(priceSlots, start_datetime);
 
       const parentBooking = await db.Booking.create({
         id: parentId,
-        start_datetime: recurringDates[0],
-        end_datetime: firstEndDatetime,
+        start_datetime: timeRanges[0].start,
+        end_datetime: timeRanges[0].end,
         total_price: pricePerSlot * repeat_count,
         status: 'pending',
         booking_type: 'recurring',
@@ -77,27 +79,21 @@ class BookingService {
         tblCourtId: court.id
       }, { transaction });
 
-      // Create child bookings
-      const childBookings = [];
-      for (const date of recurringDates) {
-        const end_datetime = calculateEndDatetime(date, court.slot_duration);
-        const childId = generateId('BK', 10);
+      // Prepare child bookings data for bulkCreate
+      const childBookingsData = timeRanges.map(range => ({
+        id: generateId('BK', 10),
+        start_datetime: range.start,
+        end_datetime: range.end,
+        total_price: pricePerSlot,
+        status: 'pending',
+        booking_type: 'single',
+        note,
+        tblUserId: user_id,
+        tblCourtId: court.id,
+        parent_booking_id: parentId
+      }));
 
-        const childBooking = await db.Booking.create({
-          id: childId,
-          start_datetime: date,
-          end_datetime,
-          total_price: pricePerSlot,
-          status: 'pending',
-          booking_type: 'single',
-          note,
-          tblUserId: user_id,
-          tblCourtId: court.id,
-          parent_booking_id: parentId
-        }, { transaction });
-
-        childBookings.push(this._formatBookingResponse(childBooking, court.name));
-      }
+      const childBookings = await db.Booking.bulkCreate(childBookingsData, { transaction });
 
       await transaction.commit();
 
@@ -112,7 +108,7 @@ class BookingService {
         repeat_count,
         note: parentBooking.note,
         created_at: parentBooking.created_at,
-        child_bookings: childBookings
+        child_bookings: childBookings.map(b => this._formatBookingResponse(b, court.name))
       };
     } catch (error) {
       await transaction.rollback();
@@ -154,15 +150,49 @@ class BookingService {
 
   async _checkBookingConflict(courtId, startDatetime, endDatetime) {
     const conflictBooking = await db.Booking.findOne({
+      include: [{
+        model: db.Court,
+        as: 'court',
+        where: {
+          id: courtId,
+          is_deleted: false,
+          status: 'active'
+        },
+        attributes: []
+      }],
       where: {
-        tblCourtId: courtId,
         status: { [Op.in]: ['pending', 'confirmed'] },
-        [Op.or]: [
-          {
-            start_datetime: { [Op.lt]: endDatetime },
-            end_datetime: { [Op.gt]: startDatetime }
-          }
-        ]
+        start_datetime: { [Op.lt]: endDatetime },
+        end_datetime: { [Op.gt]: startDatetime }
+      }
+    });
+
+    if (conflictBooking) {
+      throw AppError.conflict(ERROR_CODES.BOOKING_CONFLICT, MESSAGES.ERROR.BOOKING_CONFLICT);
+    }
+  }
+
+  async _checkMultipleBookingConflicts(courtId, timeRanges) {
+    // Build OR conditions for all time ranges
+    const timeConditions = timeRanges.map(range => ({
+      start_datetime: { [Op.lt]: range.end },
+      end_datetime: { [Op.gt]: range.start }
+    }));
+
+    const conflictBooking = await db.Booking.findOne({
+      include: [{
+        model: db.Court,
+        as: 'court',
+        where: {
+          id: courtId,
+          is_deleted: false,
+          status: 'active'
+        },
+        attributes: []
+      }],
+      where: {
+        status: { [Op.in]: ['pending', 'confirmed'] },
+        [Op.or]: timeConditions
       }
     });
 
