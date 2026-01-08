@@ -417,6 +417,162 @@ class BookingService {
 
     return { id: booking_id };
   }
+
+  async updateBooking(updateBookingDTO) {
+    const { booking_id, user_id, user_role, updates } = updateBookingDTO;
+
+    const booking = await db.Booking.findOne({
+      where: {
+        id: booking_id,
+        parent_booking_id: null,
+        is_deleted: false
+      },
+      include: [{
+        model: db.Court,
+        as: 'court',
+        attributes: ['id', 'owner_id', 'slot_duration']
+      }]
+    });
+
+    if (!booking) {
+      const error = new Error('Booking not found');
+      error.code = ERROR_CODES.BOOKING_NOT_FOUND;
+      throw error;
+    }
+
+    const isCustomer = booking.user_id === user_id;
+    const isAdmin = user_role === ROLES.ADMIN;
+
+    // Only customer and admin can update
+    if (!isCustomer && !isAdmin) {
+      const error = new Error('Permission denied');
+      error.code = ERROR_CODES.PERMISSION_DENIED;
+      throw error;
+    }
+
+    // Build update data based on role
+    const updateData = {};
+
+    if (isAdmin) {
+      // Admin can update all fields
+      if (updates.status !== undefined) updateData.status = updates.status;
+      if (updates.note !== undefined) updateData.note = updates.note;
+      if (updates.start_datetime !== undefined) {
+        updateData.start_datetime = new Date(updates.start_datetime);
+        updateData.end_datetime = calculateEndDatetime(
+          updateData.start_datetime,
+          booking.court.slot_duration
+        );
+      }
+    } else {
+      // Customer can only update note and start_datetime
+      if (updates.note !== undefined) updateData.note = updates.note;
+      if (updates.start_datetime !== undefined) {
+        updateData.start_datetime = new Date(updates.start_datetime);
+        updateData.end_datetime = calculateEndDatetime(
+          updateData.start_datetime,
+          booking.court.slot_duration
+        );
+      }
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      const error = new Error('No changes');
+      error.code = ERROR_CODES.NO_CHANGES;
+      throw error;
+    }
+
+    // If datetime changed, check for conflicts
+    if (updateData.start_datetime) {
+      const transaction = await db.sequelize.transaction();
+      try {
+        // Check conflict excluding current booking
+        const conflictBooking = await db.Booking.findOne({
+          where: {
+            id: { [Op.ne]: booking_id },
+            tblCourtId: booking.court.id,
+            is_deleted: false,
+            status: { [Op.in]: ['pending', 'confirmed'] },
+            start_datetime: { [Op.lt]: updateData.end_datetime },
+            end_datetime: { [Op.gt]: updateData.start_datetime }
+          },
+          lock: transaction.LOCK.UPDATE,
+          transaction
+        });
+
+        if (conflictBooking) {
+          await transaction.rollback();
+          const error = new Error('Booking conflict');
+          error.code = ERROR_CODES.BOOKING_CONFLICT;
+          throw error;
+        }
+
+        await db.Booking.update(updateData, {
+          where: { id: booking_id },
+          transaction
+        });
+
+        await transaction.commit();
+      } catch (error) {
+        if (transaction && !transaction.finished) {
+          await transaction.rollback();
+        }
+        throw error;
+      }
+    } else {
+      await db.Booking.update(updateData, {
+        where: { id: booking_id }
+      });
+    }
+
+    return { id: booking_id };
+  }
+
+  async confirmBooking(confirmBookingDTO) {
+    const { booking_id, user_id } = confirmBookingDTO;
+
+    const booking = await db.Booking.findOne({
+      where: {
+        id: booking_id,
+        parent_booking_id: null,
+        is_deleted: false,
+        status: 'pending'
+      },
+      include: [{
+        model: db.Court,
+        as: 'court',
+        attributes: ['id', 'owner_id']
+      }]
+    });
+
+    if (!booking) {
+      const error = new Error('Booking not found');
+      error.code = ERROR_CODES.BOOKING_NOT_FOUND;
+      throw error;
+    }
+
+    // Only court owner can confirm
+    if (booking.court.owner_id !== user_id) {
+      const error = new Error('Permission denied');
+      error.code = ERROR_CODES.PERMISSION_DENIED;
+      throw error;
+    }
+
+    // Update parent and all child bookings to confirmed
+    await db.Booking.update(
+      { status: 'confirmed' },
+      {
+        where: {
+          [Op.or]: [
+            { id: booking_id },
+            { parent_booking_id: booking_id }
+          ]
+        }
+      }
+    );
+
+    return { id: booking_id };
+  }
 }
 
 module.exports = new BookingService();

@@ -25,8 +25,26 @@ class CancelBookingDTO {
   }
 }
 
+class UpdateBookingDTO {
+  constructor(bookingId, body, userId, userRole) {
+    this.booking_id = bookingId;
+    this.user_id = userId;
+    this.user_role = userRole;
+    this.updates = body;
+  }
+}
+
+class ConfirmBookingDTO {
+  constructor(bookingId, userId) {
+    this.booking_id = bookingId;
+    this.user_id = userId;
+  }
+}
+
 module.exports = {
   CreateBookingDTO,
   GetBookingDTO,
-  CancelBookingDTO
+  CancelBookingDTO,
+  UpdateBookingDTO,
+  ConfirmBookingDTO
 };
