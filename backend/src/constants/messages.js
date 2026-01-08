@@ -12,6 +12,7 @@ const MESSAGES = {
     // Booking
     BOOKING_CREATED: 'Đặt sân thành công!',
     BOOKING_LIST_FETCHED: 'Lấy danh sách đặt sân thành công',
+    BOOKING_FETCHED: 'Lấy thông tin đặt sân thành công',
 
     // Court
     COURT_CREATED: 'Thêm sân thành công!',
@@ -73,6 +74,7 @@ const MESSAGES = {
     BOOKING_CONFLICT: 'Khung giờ này đã có người đặt',
     BOOKING_CREATE_FAILED: 'Không thể đặt sân. Vui lòng thử lại.',
     BOOKING_LIST_FAILED: 'Không thể lấy danh sách đặt sân',
+    BOOKING_DETAIL_FAILED: 'Không thể lấy thông tin đặt sân',
   }
 };
 

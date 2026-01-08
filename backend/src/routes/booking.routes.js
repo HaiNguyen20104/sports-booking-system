@@ -13,9 +13,7 @@ router.get('/court-bookings', authMiddleware, checkRole(...COURT_MANAGER_ROLES),
 
 router.get('/all', authMiddleware, checkRole(ROLES.ADMIN), bookingController.getAllBookings);
 
-router.get('/:id', authMiddleware, (req, res) => {
-  res.json({ message: 'Get booking detail' });
-});
+router.get('/:id', authMiddleware, bookingController.getBookingById);
 
 router.post('/', authMiddleware, createBookingValidation, validate, bookingController.createBooking);
 
