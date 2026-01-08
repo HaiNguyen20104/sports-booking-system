@@ -14,6 +14,8 @@ const MESSAGES = {
     BOOKING_LIST_FETCHED: 'Lấy danh sách đặt sân thành công',
     BOOKING_FETCHED: 'Lấy thông tin đặt sân thành công',
     BOOKING_CANCELLED: 'Hủy đặt sân thành công',
+    BOOKING_UPDATED: 'Cập nhật đặt sân thành công',
+    BOOKING_CONFIRMED: 'Xác nhận đặt sân thành công',
 
     // Court
     COURT_CREATED: 'Thêm sân thành công!',
@@ -77,6 +79,8 @@ const MESSAGES = {
     BOOKING_LIST_FAILED: 'Không thể lấy danh sách đặt sân',
     BOOKING_DETAIL_FAILED: 'Không thể lấy thông tin đặt sân',
     BOOKING_CANCEL_FAILED: 'Không thể hủy đặt sân',
+    BOOKING_UPDATE_FAILED: 'Không thể cập nhật đặt sân',
+    BOOKING_CONFIRM_FAILED: 'Không thể xác nhận đặt sân',
   }
 };
 

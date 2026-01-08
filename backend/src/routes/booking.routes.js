@@ -17,9 +17,9 @@ router.get('/:id', authMiddleware, bookingController.getBookingById);
 
 router.post('/', authMiddleware, createBookingValidation, validate, bookingController.createBooking);
 
-router.put('/:id', authMiddleware, (req, res) => {
-  res.json({ message: 'Update booking' });
-});
+router.put('/:id', authMiddleware, bookingController.updateBooking);
+
+router.patch('/:id/confirm', authMiddleware, checkRole(...COURT_MANAGER_ROLES), bookingController.confirmBooking);
 
 router.delete('/:id', authMiddleware, bookingController.cancelBooking);
 
