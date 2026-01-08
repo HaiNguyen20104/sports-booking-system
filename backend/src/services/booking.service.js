@@ -34,20 +34,20 @@ class BookingService {
       // Check conflict with FOR UPDATE lock to prevent race condition
       await this._checkBookingConflict(court.id, start_datetime, end_datetime, transaction);
 
-    const bookingId = generateId('BK', 10);
-    const booking = await db.Booking.create({
-      id: bookingId,
-      start_datetime,
-      end_datetime,
-      total_price: totalPrice,
-      status: 'pending',
-      booking_type: 'single',
-      note,
-      tblUserId: user_id,
-      tblCourtId: court.id
-    }, { transaction });
+      const bookingId = generateId('BK', 10);
+      const booking = await db.Booking.create({
+        id: bookingId,
+        start_datetime,
+        end_datetime,
+        total_price: totalPrice,
+        status: 'pending',
+        booking_type: 'single',
+        note,
+        tblUserId: user_id,
+        tblCourtId: court.id
+      }, { transaction });
 
-    await transaction.commit();
+      await transaction.commit();
 
       return this._formatBookingResponse(booking, court.name);
     } catch (error) {
@@ -211,6 +211,33 @@ class BookingService {
     if (conflictBooking) {
       throw AppError.conflict(ERROR_CODES.BOOKING_CONFLICT, MESSAGES.ERROR.BOOKING_CONFLICT);
     }
+  }
+
+  async getMyBookings(userId) {
+    const bookings = await db.Booking.findAll({
+      where: {
+        tblUserId: userId,
+        parent_booking_id: null
+      },
+      include: [{
+        model: db.Court,
+        as: 'court',
+        attributes: ['id', 'name', 'location']
+      }],
+      order: [['created_at', 'DESC']]
+    });
+
+    return bookings.map(booking => ({
+      id: booking.id,
+      court: booking.court,
+      start_datetime: booking.start_datetime,
+      end_datetime: booking.end_datetime,
+      total_price: booking.total_price,
+      status: booking.status,
+      booking_type: booking.booking_type,
+      note: booking.note,
+      created_at: booking.created_at
+    }));
   }
 }
 

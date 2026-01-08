@@ -28,6 +28,17 @@ class BookingController {
       return ApiResponse.error(res, MESSAGES.ERROR.BOOKING_CREATE_FAILED);
     }
   }
+
+  async getMyBookings(req, res) {
+    try {
+      const bookings = await bookingService.getMyBookings(req.user.id);
+
+      return ApiResponse.success(res, bookings, MESSAGES.SUCCESS.BOOKING_LIST_FETCHED);
+    } catch (error) {
+      console.error('Get my bookings error:', error);
+      return ApiResponse.error(res, MESSAGES.ERROR.BOOKING_LIST_FAILED);
+    }
+  }
 }
 
 module.exports = new BookingController();

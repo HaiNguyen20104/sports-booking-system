@@ -5,9 +5,7 @@ const validate = require('../middlewares/validate.middleware');
 const { createBookingValidation } = require('../validators/booking.validator');
 const bookingController = require('../controllers/booking.controller');
 
-router.get('/', authMiddleware, (req, res) => {
-  res.json({ message: 'Get user bookings' });
-});
+router.get('/', authMiddleware, bookingController.getMyBookings);
 
 router.get('/:id', authMiddleware, (req, res) => {
   res.json({ message: 'Get booking detail' });
