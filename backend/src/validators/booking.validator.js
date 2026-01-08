@@ -18,6 +18,11 @@ const createBookingValidation = [
     .isIn(['single', 'recurring'])
     .withMessage('Booking type must be single or recurring'),
 
+  body('repeat_count')
+    .optional()
+    .isInt({ min: 2, max: 52 })
+    .withMessage('Repeat count must be between 2 and 52 weeks'),
+
   body('note')
     .optional()
     .isString()
