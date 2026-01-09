@@ -9,9 +9,12 @@ class RegisterDTO {
 }
 
 class LoginDTO {
-  constructor({ email, password }) {
+  constructor({ email, password, deviceName, platform, tokenDevice }) {
     this.email = email;
     this.password = password;
+    this.device_name = deviceName || 'Unknown Device';
+    this.platform = platform || 'web';
+    this.token_device = tokenDevice || null; // Không tự sinh, để backend xử lý
   }
 }
 

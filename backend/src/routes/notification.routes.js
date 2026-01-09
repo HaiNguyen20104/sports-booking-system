@@ -3,6 +3,9 @@ const router = express.Router();
 const notificationController = require('../controllers/notification.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 
+// Get VAPID public key (không cần auth)
+router.get('/vapid-key', notificationController.getVapidKey);
+
 // Get user notifications
 router.get('/', authMiddleware, notificationController.getNotifications);
 

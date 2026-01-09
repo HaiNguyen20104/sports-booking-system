@@ -23,6 +23,11 @@ app.use('/css', express.static(path.join(__dirname, '../../frontend/public/css')
 app.use('/js', express.static(path.join(__dirname, '../../frontend/public/js')));
 app.use('/images', express.static(path.join(__dirname, '../../frontend/public/images')));
 
+// Service Worker - cần serve từ root để có scope toàn bộ site
+app.get('/sw.js', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../frontend/public/sw.js'));
+});
+
 // View engine setup
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, '../../frontend/views'));

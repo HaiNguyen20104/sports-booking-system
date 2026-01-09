@@ -10,10 +10,18 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
   errorDiv.style.display = 'none';
   successDiv.style.display = 'none';
   
-  // Get form data
+  // Lấy thông tin thiết bị (tokenDevice lấy từ localStorage, null nếu chưa có)
+  const getDeviceInfo = () => ({
+    deviceName: navigator.userAgent,
+    platform: navigator.platform,
+    tokenDevice: localStorage.getItem('tokenDevice') || null
+  });
+
+  // Get form data kèm thông tin thiết bị
   const formData = {
     email: document.getElementById('email').value.trim(),
-    password: document.getElementById('password').value
+    password: document.getElementById('password').value,
+    ...getDeviceInfo()
   };
   
   // Disable submit button
@@ -36,10 +44,30 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
       localStorage.setItem('accessToken', data.data.accessToken);
       localStorage.setItem('user', JSON.stringify(data.data.user));
       
+      // Lưu deviceId và tokenDevice nếu backend trả về
+      if (data.data.device && data.data.device.id) {
+        localStorage.setItem('deviceId', data.data.device.id);
+      }
+      if (data.data.device && data.data.device.tokenDevice) {
+        localStorage.setItem('tokenDevice', data.data.device.tokenDevice);
+      }
+      
       // Show success message
       successDiv.textContent = 'Đăng nhập thành công! Đang chuyển hướng...';
       successDiv.style.display = 'block';
       
+      // Đăng ký push notification (nếu browser hỗ trợ)
+      if (window.PushNotification && PushNotification.isSupported()) {
+        try {
+          const subscribed = await PushNotification.subscribeAndSave();
+          if (subscribed) {
+            console.log('Push notification subscribed successfully');
+          }
+        } catch (err) {
+          console.warn('Push subscription failed:', err);
+        }
+      }
+
       // Redirect to home page
       setTimeout(() => {
         window.location.href = '/';

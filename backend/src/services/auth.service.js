@@ -5,6 +5,7 @@ const { generateId } = require('../utils/generateId');
 const config = require('../config');
 const AppError = require('../utils/AppError');
 const { ERROR_CODES, MESSAGES, ROLES } = require('../constants');
+const deviceService = require('./device.service');
 
 class AuthService {
   async prepareRegistration(registerDTO) {
@@ -61,7 +62,7 @@ class AuthService {
   }
 
   async login(loginDTO) {
-    const { email, password } = loginDTO;
+    const { email, password, device_name, platform, token_device } = loginDTO;
 
     // Find user by email
     const user = await db.User.findOne({ where: { email } });
@@ -91,6 +92,14 @@ class AuthService {
       { expiresIn: config.jwtExpiresIn }
     );
 
+    // Create or update device
+    const device = await deviceService.createOrUpdate({
+      userId: user.id,
+      deviceName: device_name,
+      platform,
+      tokenDevice: token_device
+    });
+
     return {
       user: {
         id: user.id,
@@ -99,6 +108,7 @@ class AuthService {
         phone: user.phone,
         role: user.role
       },
+      device,
       accessToken
     };
   }

@@ -5,6 +5,24 @@ const { SaveSubscriptionDTO, RemoveSubscriptionDTO } = require('../dtos/notifica
 
 class NotificationController {
   /**
+   * GET /api/notifications/vapid-key
+   * Lấy VAPID public key để FE dùng subscribe push
+   */
+  async getVapidKey(req, res) {
+    try {
+      const vapidPublicKey = process.env.VAPID_PUBLIC_KEY;
+      
+      if (!vapidPublicKey) {
+        return ApiResponse.error(res, 'VAPID key not configured');
+      }
+
+      return ApiResponse.success(res, { vapidPublicKey }, 'VAPID key retrieved');
+    } catch (error) {
+      console.error('Get VAPID key error:', error);
+      return ApiResponse.error(res, 'Failed to get VAPID key');
+    }
+  }
+  /**
    * GET /api/notifications
    * Lấy danh sách notifications của user
    */
@@ -84,7 +102,7 @@ class NotificationController {
         return ApiResponse.notFound(res, MESSAGES.ERROR.DEVICE_NOT_FOUND);
       }
 
-      return ApiResponse.success(res, null, MESSAGES.SUCCESS.PUSH_SUBSCRIBED);
+      return ApiResponse.success(res, device, MESSAGES.SUCCESS.PUSH_SUBSCRIBED);
     } catch (error) {
       console.error('Subscribe error:', error);
       return ApiResponse.error(res, MESSAGES.ERROR.PUSH_SUBSCRIBE_FAILED);
