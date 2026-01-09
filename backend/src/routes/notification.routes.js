@@ -1,17 +1,21 @@
 const express = require('express');
 const router = express.Router();
+const notificationController = require('../controllers/notification.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 
-router.get('/', authMiddleware, (req, res) => {
-  res.json({ message: 'Get user notifications' });
-});
+// Get user notifications
+router.get('/', authMiddleware, notificationController.getNotifications);
 
-router.put('/:id/read', authMiddleware, (req, res) => {
-  res.json({ message: 'Mark notification as read' });
-});
+// Mark notification as read
+router.patch('/:id/read', authMiddleware, notificationController.markAsRead);
 
-router.delete('/:id', authMiddleware, (req, res) => {
-  res.json({ message: 'Delete notification' });
-});
+// Mark all notifications as read
+router.patch('/read-all', authMiddleware, notificationController.markAllAsRead);
+
+// Subscribe to push notifications
+router.post('/subscribe', authMiddleware, notificationController.subscribe);
+
+// Unsubscribe from push notifications
+router.delete('/subscribe', authMiddleware, notificationController.unsubscribe);
 
 module.exports = router;
