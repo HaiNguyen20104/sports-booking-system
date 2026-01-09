@@ -42,6 +42,7 @@ module.exports = (sequelize) => {
     tblBookingId: {
       type: DataTypes.STRING(11),
       allowNull: false,
+      field: 'tblBookingId',
       references: {
         model: 'tblBooking',
         key: 'id'
@@ -49,8 +50,12 @@ module.exports = (sequelize) => {
     }
   }, {
     tableName: 'tblTransaction',
-    timestamps: false
+    timestamps: false,
+    underscored: false
   });
+
+  // Transaction belongs to Booking
+  Transaction.belongsTo(sequelize.models.Booking, { foreignKey: 'tblBookingId', as: 'booking' });
 
   return Transaction;
 };

@@ -1,0 +1,20 @@
+extends ../layouts/main
+
+block content
+  .container.mt-5
+    .row.justify-content-center
+      .col-md-6.text-center
+        .card.shadow
+          .card-body.p-5
+            .mb-4
+              i.bi.bi-x-circle-fill.text-danger(style="font-size: 4rem;")
+            h2.text-danger.mb-3 Thanh toán bị hủy
+            p.text-muted Bạn đã hủy thanh toán. Booking vẫn đang chờ xử lý.
+            hr
+            if bookingId
+              p.small.text-muted
+                | Booking ID: #{bookingId}
+            .mt-4
+              a.btn.btn-primary(href="/") Về trang chủ
+              |  
+              a.btn.btn-warning.ms-2(href=`/booking/${bookingId}`) Thử thanh toán lại
