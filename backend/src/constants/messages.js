@@ -29,6 +29,7 @@ const MESSAGES = {
     CHECKOUT_CREATED: 'Tạo phiên thanh toán thành công',
     PAYMENT_STATUS_FETCHED: 'Lấy trạng thái thanh toán thành công',
     PAYMENT_VERIFIED: 'Xác nhận thanh toán thành công',
+    PAYMENT_HISTORY_FETCHED: 'Lấy lịch sử thanh toán thành công',
   },
 
   // Error messages
@@ -92,6 +93,7 @@ const MESSAGES = {
     PAYMENT_NOT_COMPLETED: 'Thanh toán chưa hoàn tất',
     PAYMENT_VERIFY_FAILED: 'Không thể xác nhận thanh toán',
     INVALID_WEBHOOK_SIGNATURE: 'Chữ ký webhook không hợp lệ',
+    PAYMENT_HISTORY_FAILED: 'Không thể lấy lịch sử thanh toán',
     BOOKING_UPDATE_FAILED: 'Không thể cập nhật đặt sân',
     BOOKING_CONFIRM_FAILED: 'Không thể xác nhận đặt sân',
   }

@@ -86,8 +86,5 @@ module.exports = (sequelize) => {
   Booking.hasMany(Booking, { foreignKey: 'parent_booking_id', as: 'childBookings' });
   Booking.belongsTo(Booking, { foreignKey: 'parent_booking_id', as: 'parentBooking' });
 
-  // Booking has one Transaction
-  Booking.hasOne(sequelize.models.Transaction, { foreignKey: 'tblBookingId', as: 'transaction' });
-
   return Booking;
 };

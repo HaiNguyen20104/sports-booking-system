@@ -57,6 +57,17 @@ class PaymentController {
       return ApiResponse.error(res, MESSAGES.ERROR.PAYMENT_STATUS_FAILED);
     }
   }
+
+  async getPaymentHistory(req, res) {
+    try {
+      const result = await paymentService.getPaymentHistory(req.user.id, req.user.role);
+
+      return ApiResponse.success(res, result, MESSAGES.SUCCESS.PAYMENT_HISTORY_FETCHED);
+    } catch (error) {
+      console.error('Get payment history error:', error);
+      return ApiResponse.error(res, MESSAGES.ERROR.PAYMENT_HISTORY_FAILED);
+    }
+  }
 }
 
 module.exports = new PaymentController();
