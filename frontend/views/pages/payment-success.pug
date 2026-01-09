@@ -1,0 +1,14 @@
+extends ../layouts/main
+
+block content
+  .container.mt-5
+    .row.justify-content-center
+      .col-md-6.text-center
+        .card.shadow
+          .card-body.p-5
+            .mb-4
+              i.bi.bi-check-circle-fill.text-success(style="font-size: 4rem;")
+            h2.text-success.mb-3 Thanh toán thành công!
+            p.text-muted Cảm ơn bạn đã đặt sân. Booking của bạn đang được xác nhận.
+            .mt-4
+              a.btn.btn-primary(href="/") Về trang chủ

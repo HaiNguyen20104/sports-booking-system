@@ -24,6 +24,11 @@ const MESSAGES = {
     COURT_LIST_FETCHED: 'Lấy danh sách sân thành công',
     COURT_FETCHED: 'Lấy thông tin sân thành công',
     MY_COURTS_FETCHED: 'Lấy danh sách sân của bạn thành công',
+
+    // Payment
+    CHECKOUT_CREATED: 'Tạo phiên thanh toán thành công',
+    PAYMENT_STATUS_FETCHED: 'Lấy trạng thái thanh toán thành công',
+    PAYMENT_VERIFIED: 'Xác nhận thanh toán thành công',
   },
 
   // Error messages
@@ -79,6 +84,14 @@ const MESSAGES = {
     BOOKING_LIST_FAILED: 'Không thể lấy danh sách đặt sân',
     BOOKING_DETAIL_FAILED: 'Không thể lấy thông tin đặt sân',
     BOOKING_CANCEL_FAILED: 'Không thể hủy đặt sân',
+
+    // Payment
+    BOOKING_ALREADY_PAID: 'Đặt sân này đã được thanh toán',
+    PAYMENT_CREATE_FAILED: 'Không thể tạo phiên thanh toán',
+    PAYMENT_STATUS_FAILED: 'Không thể lấy trạng thái thanh toán',
+    PAYMENT_NOT_COMPLETED: 'Thanh toán chưa hoàn tất',
+    PAYMENT_VERIFY_FAILED: 'Không thể xác nhận thanh toán',
+    INVALID_WEBHOOK_SIGNATURE: 'Chữ ký webhook không hợp lệ',
     BOOKING_UPDATE_FAILED: 'Không thể cập nhật đặt sân',
     BOOKING_CONFIRM_FAILED: 'Không thể xác nhận đặt sân',
   }

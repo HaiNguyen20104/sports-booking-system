@@ -8,6 +8,9 @@ const app = express();
 const config = require('./config');
 const db = require('./models');
 
+// Stripe webhook needs raw body - must be before express.json()
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }), require('./routes/payment.routes').webhookHandler);
+
 // Middleware
 app.use(cors());
 app.use(morgan('dev'));
@@ -30,6 +33,7 @@ app.use('/api/courts', require('./routes/court.routes'));
 app.use('/api/bookings', require('./routes/booking.routes'));
 app.use('/api/users', require('./routes/user.routes'));
 app.use('/api/notifications', require('./routes/notification.routes'));
+app.use('/api/payments', require('./routes/payment.routes'));
 
 // Web Routes
 app.get('/', (req, res) => {
@@ -86,6 +90,21 @@ app.get('/my-courts', (req, res) => {
 app.get('/add-court', (req, res) => {
   res.render('pages/add-court', {
     title: 'Thêm Sân Mới'
+  });
+});
+
+// Payment result pages
+app.get('/payment/success', (req, res) => {
+  res.render('pages/payment-success', {
+    title: 'Thanh toán thành công',
+    sessionId: req.query.session_id
+  });
+});
+
+app.get('/payment/cancel', (req, res) => {
+  res.render('pages/payment-cancel', {
+    title: 'Thanh toán bị hủy',
+    bookingId: req.query.booking_id
   });
 });
 
