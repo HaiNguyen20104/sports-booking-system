@@ -23,6 +23,18 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING(255),
       allowNull: true
     },
+    push_endpoint: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    push_p256dh: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    push_auth: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
     tblUserId: {
       type: DataTypes.STRING(10),
       allowNull: false,
