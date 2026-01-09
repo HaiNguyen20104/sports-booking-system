@@ -12,5 +12,8 @@ router.post('/webhook', paymentController.handleWebhook);
 // Get payment status (requires auth)
 router.get('/status/:bookingId', authMiddleware, paymentController.getPaymentStatus);
 
+// Get payment history (requires auth)
+router.get('/history', authMiddleware, paymentController.getPaymentHistory);
+
 module.exports = router;
 module.exports.webhookHandler = paymentController.handleWebhook;

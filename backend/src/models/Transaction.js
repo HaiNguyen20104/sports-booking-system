@@ -54,8 +54,5 @@ module.exports = (sequelize) => {
     underscored: false
   });
 
-  // Transaction belongs to Booking
-  Transaction.belongsTo(sequelize.models.Booking, { foreignKey: 'tblBookingId', as: 'booking' });
-
   return Transaction;
 };

@@ -1,8 +1,7 @@
 const stripe = require('../config/stripe');
 const db = require('../models');
 const { generateId } = require('../utils/generateId');
-const { ERROR_CODES, MESSAGES } = require('../constants');
-
+const { ROLES, ERROR_CODES, MESSAGES } = require('../constants');
 class PaymentService {
   async createCheckoutSession(createCheckoutDTO) {
     const { booking_id, user_id } = createCheckoutDTO;
@@ -181,6 +180,44 @@ class PaymentService {
       amount: booking.total_price,
       paid_at: booking.transaction?.status === 'completed' ? booking.transaction.created_at : null
     };
+  }
+
+  async getPaymentHistory(userId, role) {
+    const includeOptions = [{
+      model: db.Booking,
+      as: 'booking',
+      where: { is_deleted: false },
+      include: [{
+        model: db.Court,
+        as: 'court',
+        attributes: ['id', 'name']
+      }]
+    }];
+
+    // If not admin, filter by user
+    if (role !== ROLES.ADMIN) {
+      includeOptions[0].where.tblUserId = userId;
+    }
+
+    const transactions = await db.Transaction.findAll({
+      include: includeOptions,
+      order: [['created_at', 'DESC']]
+    });
+
+    return transactions.map(tx => ({
+      id: tx.id,
+      amount: tx.amount,
+      payment_method: tx.payment_method,
+      payment_provider: tx.payment_provider,
+      status: tx.status,
+      created_at: tx.created_at,
+      booking: {
+        id: tx.booking.id,
+        start_datetime: tx.booking.start_datetime,
+        end_datetime: tx.booking.end_datetime,
+        court_name: tx.booking.court.name
+      }
+    }));
   }
 }
 
