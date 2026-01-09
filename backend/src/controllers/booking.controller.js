@@ -1,7 +1,7 @@
 const bookingService = require('../services/booking.service');
 const ApiResponse = require('../utils/apiResponse');
 const { ERROR_CODES, MESSAGES } = require('../constants');
-const { CreateBookingDTO, GetBookingDTO, CancelBookingDTO } = require('../dtos/booking.dto');
+const { CreateBookingDTO, GetBookingDTO, CancelBookingDTO, UpdateBookingDTO, ConfirmBookingDTO } = require('../dtos/booking.dto');
 
 class BookingController {
   async createBooking(req, res) {
@@ -107,6 +107,60 @@ class BookingController {
       }
 
       return ApiResponse.error(res, MESSAGES.ERROR.BOOKING_CANCEL_FAILED);
+    }
+  }
+
+  async updateBooking(req, res) {
+    try {
+      const updateBookingDTO = new UpdateBookingDTO(
+        req.params.id,
+        req.body,
+        req.user.id,
+        req.user.role
+      );
+      const result = await bookingService.updateBooking(updateBookingDTO);
+
+      return ApiResponse.success(res, result, MESSAGES.SUCCESS.BOOKING_UPDATED);
+    } catch (error) {
+      console.error('Update booking error:', error);
+
+      if (error.code === ERROR_CODES.BOOKING_NOT_FOUND) {
+        return ApiResponse.notFound(res, MESSAGES.ERROR.BOOKING_NOT_FOUND);
+      }
+      if (error.code === ERROR_CODES.PERMISSION_DENIED) {
+        return ApiResponse.forbidden(res, MESSAGES.ERROR.PERMISSION_DENIED);
+      }
+      if (error.code === ERROR_CODES.BOOKING_CONFLICT) {
+        return ApiResponse.conflict(res, MESSAGES.ERROR.BOOKING_CONFLICT);
+      }
+      if (error.code === ERROR_CODES.NO_CHANGES) {
+        return ApiResponse.badRequest(res, MESSAGES.ERROR.NO_CHANGES);
+      }
+
+      return ApiResponse.error(res, MESSAGES.ERROR.BOOKING_UPDATE_FAILED);
+    }
+  }
+
+  async confirmBooking(req, res) {
+    try {
+      const confirmBookingDTO = new ConfirmBookingDTO(
+        req.params.id,
+        req.user.id
+      );
+      const result = await bookingService.confirmBooking(confirmBookingDTO);
+
+      return ApiResponse.success(res, result, MESSAGES.SUCCESS.BOOKING_CONFIRMED);
+    } catch (error) {
+      console.error('Confirm booking error:', error);
+
+      if (error.code === ERROR_CODES.BOOKING_NOT_FOUND) {
+        return ApiResponse.notFound(res, MESSAGES.ERROR.BOOKING_NOT_FOUND);
+      }
+      if (error.code === ERROR_CODES.PERMISSION_DENIED) {
+        return ApiResponse.forbidden(res, MESSAGES.ERROR.PERMISSION_DENIED);
+      }
+
+      return ApiResponse.error(res, MESSAGES.ERROR.BOOKING_CONFIRM_FAILED);
     }
   }
 }
