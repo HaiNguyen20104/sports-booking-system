@@ -30,6 +30,14 @@ class BookingService {
     const end_datetime = calculateEndDatetime(start_datetime, court.slot_duration);
     const totalPrice = findPriceForTime(priceSlots, start_datetime);
 
+    // Kiểm tra có giá cho khung giờ này không
+    if (totalPrice === null) {
+      throw AppError.badRequest(
+        ERROR_CODES.INVALID_TIME_SLOT,
+        MESSAGES.ERROR.NO_PRICE_FOR_TIME_SLOT
+      );
+    }
+
     const transaction = await db.sequelize.transaction();
 
     try {
@@ -64,6 +72,14 @@ class BookingService {
   async _createRecurringBooking(court, priceSlots, start_datetime, repeat_count, note, user_id) {
     const recurringDates = generateRecurringDates(start_datetime, repeat_count);
     const pricePerSlot = findPriceForTime(priceSlots, start_datetime);
+
+    // Kiểm tra có giá cho khung giờ này không
+    if (pricePerSlot === null) {
+      throw AppError.badRequest(
+        ERROR_CODES.INVALID_TIME_SLOT,
+        MESSAGES.ERROR.NO_PRICE_FOR_TIME_SLOT
+      );
+    }
 
     // Build time ranges for all recurring dates
     const timeRanges = recurringDates.map(date => ({

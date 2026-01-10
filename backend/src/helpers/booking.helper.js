@@ -12,9 +12,10 @@ function calculateEndDatetime(startDatetime, slotDurationMinutes) {
 }
 
 // Find price for a specific time from price slots
+// Trả về null nếu không tìm thấy giá
 function findPriceForTime(priceSlots, startDatetime) {
   if (priceSlots.length === 0) {
-    return 0;
+    return null; // Không có price slot
   }
 
   const startTime = extractTime(startDatetime);
@@ -25,7 +26,7 @@ function findPriceForTime(priceSlots, startDatetime) {
     }
   }
 
-  return 0;
+  return null; // Không tìm thấy khung giờ phù hợp
 }
 
 // Generate recurring dates (weekly)

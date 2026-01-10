@@ -92,6 +92,7 @@ const MESSAGES = {
     BOOKING_LIST_FAILED: 'Không thể lấy danh sách đặt sân',
     BOOKING_DETAIL_FAILED: 'Không thể lấy thông tin đặt sân',
     BOOKING_CANCEL_FAILED: 'Không thể hủy đặt sân',
+    NO_PRICE_FOR_TIME_SLOT: 'Khung giờ này chưa được cấu hình giá. Vui lòng chọn khung giờ khác.',
 
     // Payment
     BOOKING_ALREADY_PAID: 'Đặt sân này đã được thanh toán',
