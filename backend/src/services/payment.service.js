@@ -2,6 +2,7 @@ const stripe = require('../config/stripe');
 const db = require('../models');
 const { generateId } = require('../utils/generateId');
 const { ROLES, ERROR_CODES, MESSAGES } = require('../constants');
+const notificationService = require('./notification.service');
 class PaymentService {
   async createCheckoutSession(createCheckoutDTO) {
     const { booking_id, user_id } = createCheckoutDTO;
@@ -145,6 +146,57 @@ class PaymentService {
         }
       }
     );
+
+    // Notify court owner about payment
+    await this._notifyOwnerPaymentSuccess(bookingId, session.amount_total);
+  }
+
+  /**
+   * Notify court owner when payment is successful
+   */
+  async _notifyOwnerPaymentSuccess(bookingId, amountTotal) {
+    try {
+      // Get booking with court and user info
+      const booking = await db.Booking.findOne({
+        where: { id: bookingId },
+        include: [
+          {
+            model: db.Court,
+            as: 'court',
+            attributes: ['id', 'name', 'owner_id']
+          },
+          {
+            model: db.User,
+            as: 'user',
+            attributes: ['id', 'full_name', 'email']
+          }
+        ]
+      });
+
+      if (!booking || !booking.court) {
+        console.error('Booking or court not found for notification');
+        return;
+      }
+
+      const startDate = new Date(booking.start_datetime);
+      const dateStr = startDate.toLocaleDateString('vi-VN');
+      const timeStr = startDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+      // VND không có cent, không cần chia cho 100
+      const amount = amountTotal.toLocaleString('vi-VN');
+
+      const message = `${booking.user?.full_name || 'Khách hàng'} đã thanh toán ${amount}đ cho đặt sân ${booking.court.name} vào ${dateStr} lúc ${timeStr}`;
+
+      await notificationService.create({
+        userId: booking.court.owner_id,
+        title: 'Thanh toán thành công',
+        message,
+        type: 'payment',
+        data: { bookingId: booking.id }
+      });
+    } catch (error) {
+      // Log error but don't fail the payment process
+      console.error('Failed to send payment notification to owner:', error.message);
+    }
   }
 
   async _handlePaymentFailed(session) {
