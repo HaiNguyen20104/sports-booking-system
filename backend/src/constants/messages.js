@@ -30,6 +30,13 @@ const MESSAGES = {
     PAYMENT_STATUS_FETCHED: 'Lấy trạng thái thanh toán thành công',
     PAYMENT_VERIFIED: 'Xác nhận thanh toán thành công',
     PAYMENT_HISTORY_FETCHED: 'Lấy lịch sử thanh toán thành công',
+
+    // Notification
+    NOTIFICATION_LIST_FETCHED: 'Lấy danh sách thông báo thành công',
+    NOTIFICATION_MARKED_READ: 'Đánh dấu đã đọc thành công',
+    NOTIFICATION_ALL_MARKED_READ: 'Đánh dấu tất cả đã đọc thành công',
+    PUSH_SUBSCRIBED: 'Đăng ký nhận thông báo thành công',
+    PUSH_UNSUBSCRIBED: 'Hủy đăng ký thông báo thành công',
   },
 
   // Error messages
@@ -96,6 +103,14 @@ const MESSAGES = {
     PAYMENT_HISTORY_FAILED: 'Không thể lấy lịch sử thanh toán',
     BOOKING_UPDATE_FAILED: 'Không thể cập nhật đặt sân',
     BOOKING_CONFIRM_FAILED: 'Không thể xác nhận đặt sân',
+
+    // Notification
+    NOTIFICATION_NOT_FOUND: 'Không tìm thấy thông báo',
+    NOTIFICATION_LIST_FAILED: 'Không thể lấy danh sách thông báo',
+    NOTIFICATION_UPDATE_FAILED: 'Không thể cập nhật thông báo',
+    DEVICE_NOT_FOUND: 'Không tìm thấy thiết bị',
+    PUSH_SUBSCRIBE_FAILED: 'Không thể đăng ký nhận thông báo',
+    PUSH_UNSUBSCRIBE_FAILED: 'Không thể hủy đăng ký thông báo',
   }
 };
 

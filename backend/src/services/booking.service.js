@@ -5,6 +5,7 @@ const { ERROR_CODES, MESSAGES } = require('../constants');
 const { Op } = require('sequelize');
 const { calculateEndDatetime, findPriceForTime, generateRecurringDates } = require('../helpers/booking.helper');
 const { ROLES } = require('../constants');
+const notificationService = require('./notification.service');
 
 class BookingService {
   async createBooking(createBookingDTO) {
@@ -49,6 +50,9 @@ class BookingService {
       }, { transaction });
 
       await transaction.commit();
+
+      // Push notification to court owner
+      this._notifyOwnerNewBooking(court, booking);
 
       return this._formatBookingResponse(booking, court.name);
     } catch (error) {
@@ -106,6 +110,9 @@ class BookingService {
 
       await transaction.commit();
 
+      // Push notification to court owner
+      this._notifyOwnerNewBooking(court, parentBooking, repeat_count);
+
       return {
         id: parentBooking.id,
         user_id: parentBooking.tblUserId,
@@ -139,6 +146,33 @@ class BookingService {
       note: booking.note,
       created_at: booking.created_at
     };
+  }
+
+  /**
+   * Notify court owner about new booking
+   */
+  async _notifyOwnerNewBooking(court, booking, repeatCount = null) {
+    try {
+      const startDate = new Date(booking.start_datetime);
+      const dateStr = startDate.toLocaleDateString('vi-VN');
+      const timeStr = startDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+      let message = `Có đặt sân mới cho ${court.name} vào ${dateStr} lúc ${timeStr}`;
+      if (repeatCount) {
+        message = `Có đặt sân định kỳ mới (${repeatCount} buổi) cho ${court.name}, bắt đầu ${dateStr} lúc ${timeStr}`;
+      }
+
+      await notificationService.create({
+        userId: court.owner_id,
+        title: 'Đặt sân mới',
+        message,
+        type: 'booking',
+        data: { bookingId: booking.id }
+      });
+    } catch (error) {
+      // Log error but don't fail the booking
+      console.error('Failed to send notification to owner:', error.message);
+    }
   }
 
   async _findActiveCourt(courtId) {
