@@ -146,6 +146,10 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   console.log(`Environment: ${config.env}`);
   console.log(`Visit: http://localhost:${PORT}`);
+
+  // Start cronjobs
+  const bookingReminderJob = require('./jobs/bookingReminder.job');
+  bookingReminderJob.start();
 });
 
 module.exports = app;
