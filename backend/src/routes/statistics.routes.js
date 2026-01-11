@@ -11,4 +11,7 @@ router.get('/overview', authMiddleware, checkRole(ROLES.ADMIN), statisticsContro
 // Court Owner: Thống kê tất cả sân của chủ sân
 router.get('/my-courts', authMiddleware, checkRole(ROLES.MANAGER), statisticsController.getMyCourtsStatistics);
 
+// Court Owner, Admin: Thống kê chi tiết 1 sân cụ thể
+router.get('/courts/:courtId', authMiddleware, checkRole(ROLES.MANAGER, ROLES.ADMIN), statisticsController.getCourtStatistics);
+
 module.exports = router;
