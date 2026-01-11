@@ -4,6 +4,9 @@ const { ROLES, COURT_STATUS, BOOKING_STATUS, TRANSACTION_STATUS, ERROR_CODES, ME
 const AppError = require('../utils/AppError');
 
 class StatisticsService {
+  /**
+   * Thống kê tổng quan hệ thống (Admin)
+   */
   async getOverview(params = {}) {
     try {
       const { from, to } = params;
@@ -102,6 +105,120 @@ class StatisticsService {
       console.error('Statistics overview error:', error);
       throw new AppError(
         MESSAGES.ERROR.STATISTICS_OVERVIEW_FAILED,
+        500,
+        ERROR_CODES.STATISTICS_FETCH_FAILED
+      );
+    }
+  }
+
+  /**
+   * Thống kê tất cả sân của chủ sân (Court Owner)
+   */
+  async getMyCourtsStatistics(ownerId, params = {}) {
+    try {
+      const { from, to } = params;
+      const dateFilter = this._buildDateFilter(from, to);
+
+      // Lấy tất cả sân của chủ sân
+      const courts = await db.Court.findAll({
+        where: {
+          owner_id: ownerId,
+          is_deleted: false
+        },
+        attributes: ['id', 'name', 'status', 'location'],
+        raw: true
+      });
+
+      const courtIds = courts.map(c => c.id);
+
+      if (courtIds.length === 0) {
+        return {
+          total_courts: 0,
+          active_courts: 0,
+          inactive_courts: 0,
+          total_bookings: 0,
+          total_revenue: 0,
+          booking_stats: {
+            pending: 0,
+            confirmed: 0,
+            completed: 0,
+            cancelled: 0
+          }
+        };
+      }
+
+      // Thống kê booking cho tất cả sân
+      const bookingStats = await db.Booking.findAll({
+        attributes: [
+          'status',
+          [db.sequelize.fn('COUNT', db.sequelize.col('Booking.id')), 'count'],
+          [db.sequelize.fn('SUM', db.sequelize.col('total_price')), 'total_price']
+        ],
+        where: {
+          tblCourtId: { [Op.in]: courtIds },
+          is_deleted: false,
+          parent_booking_id: null,
+          ...dateFilter
+        },
+        group: ['status'],
+        raw: true
+      });
+
+      // Tổng doanh thu từ transactions
+      const revenueResult = await db.Transaction.findOne({
+        attributes: [
+          [db.sequelize.fn('SUM', db.sequelize.col('Transaction.amount')), 'total_revenue']
+        ],
+        include: [{
+          model: db.Booking,
+          as: 'booking',
+          attributes: [],
+          where: {
+            tblCourtId: { [Op.in]: courtIds },
+            is_deleted: false
+          }
+        }],
+        where: {
+          status: TRANSACTION_STATUS.COMPLETED,
+          ...(from || to ? {
+            created_at: {
+              ...(from && { [Op.gte]: new Date(from) }),
+              ...(to && { [Op.lte]: new Date(to + 'T23:59:59') })
+            }
+          } : {})
+        },
+        raw: true
+      });
+
+      // Parse overall booking stats
+      const overallStats = {
+        pending: 0,
+        confirmed: 0,
+        completed: 0,
+        cancelled: 0
+      };
+      let totalBookings = 0;
+
+      bookingStats.forEach(item => {
+        const count = parseInt(item.count) || 0;
+        totalBookings += count;
+        if (overallStats.hasOwnProperty(item.status)) {
+          overallStats[item.status] = count;
+        }
+      });
+
+      return {
+        total_courts: courts.length,
+        active_courts: courts.filter(c => c.status === COURT_STATUS.ACTIVE).length,
+        inactive_courts: courts.filter(c => c.status !== COURT_STATUS.ACTIVE).length,
+        total_bookings: totalBookings,
+        total_revenue: parseFloat(revenueResult?.total_revenue) || 0,
+        booking_stats: overallStats
+      };
+    } catch (error) {
+      console.error('My courts statistics error:', error);
+      throw new AppError(
+        MESSAGES.ERROR.STATISTICS_MY_COURTS_FAILED,
         500,
         ERROR_CODES.STATISTICS_FETCH_FAILED
       );

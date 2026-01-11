@@ -8,4 +8,7 @@ const { ROLES } = require('../constants');
 // Admin only: Thống kê tổng quan hệ thống
 router.get('/overview', authMiddleware, checkRole(ROLES.ADMIN), statisticsController.getOverview);
 
+// Court Owner: Thống kê tất cả sân của chủ sân
+router.get('/my-courts', authMiddleware, checkRole(ROLES.MANAGER), statisticsController.getMyCourtsStatistics);
+
 module.exports = router;
