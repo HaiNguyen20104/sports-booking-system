@@ -39,6 +39,7 @@ app.use('/api/bookings', require('./routes/booking.routes'));
 app.use('/api/users', require('./routes/user.routes'));
 app.use('/api/notifications', require('./routes/notification.routes'));
 app.use('/api/payments', require('./routes/payment.routes'));
+app.use('/api/statistics', require('./routes/statistics.routes'));
 
 // Web Routes
 app.get('/', (req, res) => {
