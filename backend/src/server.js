@@ -123,6 +123,28 @@ app.get('/health', (req, res) => {
   });
 });
 
+// API Health check (for Docker)
+app.get('/api/health', async (req, res) => {
+  try {
+    // Kiểm tra kết nối database
+    await db.sequelize.authenticate();
+    res.json({ 
+      status: 'OK', 
+      timestamp: new Date().toISOString(),
+      environment: config.env,
+      database: 'connected'
+    });
+  } catch (error) {
+    res.status(503).json({ 
+      status: 'ERROR', 
+      timestamp: new Date().toISOString(),
+      environment: config.env,
+      database: 'disconnected',
+      error: error.message
+    });
+  }
+});
+
 // 404 handler
 app.use((req, res, next) => {
   res.status(404).json({
