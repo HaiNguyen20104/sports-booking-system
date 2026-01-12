@@ -2,6 +2,8 @@ const ERROR_CODES = require('./errorCodes');
 const MESSAGES = require('./messages');
 const { ROLES, ALL_ROLES, COURT_MANAGER_ROLES } = require('./roles');
 const { COURT_STATUS, ALL_COURT_STATUS, COURT_DEFAULTS } = require('./court');
+const { BOOKING_STATUS, ALL_BOOKING_STATUS } = require('./booking');
+const { TRANSACTION_STATUS, ALL_TRANSACTION_STATUS, PAYMENT_METHOD, ALL_PAYMENT_METHODS } = require('./transaction');
 
 module.exports = {
   ERROR_CODES,
@@ -11,5 +13,11 @@ module.exports = {
   COURT_MANAGER_ROLES,
   COURT_STATUS,
   ALL_COURT_STATUS,
-  COURT_DEFAULTS
+  COURT_DEFAULTS,
+  BOOKING_STATUS,
+  ALL_BOOKING_STATUS,
+  TRANSACTION_STATUS,
+  ALL_TRANSACTION_STATUS,
+  PAYMENT_METHOD,
+  ALL_PAYMENT_METHODS
 };

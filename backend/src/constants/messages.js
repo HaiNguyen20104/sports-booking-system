@@ -37,6 +37,13 @@ const MESSAGES = {
     NOTIFICATION_ALL_MARKED_READ: 'Đánh dấu tất cả đã đọc thành công',
     PUSH_SUBSCRIBED: 'Đăng ký nhận thông báo thành công',
     PUSH_UNSUBSCRIBED: 'Hủy đăng ký thông báo thành công',
+
+    // Statistics
+    STATISTICS_OVERVIEW_FETCHED: 'Lấy thống kê tổng quan thành công',
+    STATISTICS_MY_COURTS_FETCHED: 'Lấy thống kê sân của bạn thành công',
+    STATISTICS_COURT_DETAIL_FETCHED: 'Lấy thống kê chi tiết sân thành công',
+    STATISTICS_REVENUE_FETCHED: 'Lấy thống kê doanh thu thành công',
+    STATISTICS_EXPORTED: 'Xuất báo cáo thành công',
   },
 
   // Error messages
@@ -112,6 +119,13 @@ const MESSAGES = {
     DEVICE_NOT_FOUND: 'Không tìm thấy thiết bị',
     PUSH_SUBSCRIBE_FAILED: 'Không thể đăng ký nhận thông báo',
     PUSH_UNSUBSCRIBE_FAILED: 'Không thể hủy đăng ký thông báo',
+
+    // Statistics
+    STATISTICS_OVERVIEW_FAILED: 'Không thể lấy thống kê tổng quan',
+    STATISTICS_MY_COURTS_FAILED: 'Không thể lấy thống kê sân của bạn',
+    STATISTICS_COURT_DETAIL_FAILED: 'Không thể lấy thống kê chi tiết sân',
+    STATISTICS_REVENUE_FAILED: 'Không thể lấy thống kê doanh thu',
+    STATISTICS_EXPORT_FAILED: 'Không thể xuất báo cáo',
   }
 };
 
