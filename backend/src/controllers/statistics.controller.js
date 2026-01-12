@@ -72,6 +72,32 @@ class StatisticsController {
       );
     }
   }
+
+  // GET /api/statistics/export/excel (Court Owner, Admin)
+  async exportExcel(req, res) {
+    try {
+      const { from, to } = req.query;
+      const user = req.user;
+
+      const result = await statisticsService.exportExcel(user, { from, to });
+
+      // Set headers for Excel download
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename=${result.filename}`);
+      res.setHeader('Content-Length', result.buffer.length);
+
+      return res.send(result.buffer);
+    } catch (error) {
+      console.error('Export Excel error:', error);
+      if (error.statusCode) {
+        return ApiResponse.error(res, error.message, error.statusCode, error.code);
+      }
+      return ApiResponse.error(
+        res,
+        MESSAGES.ERROR.STATISTICS_EXPORT_FAILED
+      );
+    }
+  }
 }
 
 module.exports = new StatisticsController();

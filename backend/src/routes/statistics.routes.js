@@ -14,4 +14,7 @@ router.get('/my-courts', authMiddleware, checkRole(ROLES.MANAGER), statisticsCon
 // Court Owner, Admin: Thống kê chi tiết 1 sân cụ thể
 router.get('/courts/:courtId', authMiddleware, checkRole(ROLES.MANAGER, ROLES.ADMIN), statisticsController.getCourtStatistics);
 
+// Court Owner, Admin: Xuất báo cáo Excel
+router.get('/export/excel', authMiddleware, checkRole(ROLES.MANAGER, ROLES.ADMIN), statisticsController.exportExcel);
+
 module.exports = router;
