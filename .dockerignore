@@ -1,0 +1,50 @@
+# Dependencies
+backend/node_modules
+frontend/node_modules
+node_modules
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test files
+backend/tests
+backend/coverage
+*.test.js
+*.spec.js
+
+# Environment files
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files (không cần copy vào image)
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Documentation
+*.md
+docs/
+
+# Build files
+dist
+build
+
+# Temp files
+tmp
+temp
+*.tmp
